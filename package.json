@@ -36,9 +36,11 @@
     "rollup-plugin-import-assets": "^1.1.1",
     "shx": "^0.3.4",
     "tslib": "^2.4.0",
-    "typescript": "^4.7.4"
+    "typescript": "^4.7.4",
+    "react-router": "^6.4.2"
   },
   "dependencies": {
+    "conf": "^10.2.0",
     "decky-frontend-lib": "^3.0.0",
     "react-icons": "^4.4.0"
   },
