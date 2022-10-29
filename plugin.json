@@ -4,7 +4,7 @@
   "flags": [],
   "publish": {
     "tags": ["EmuDeck"],
-    "description": "RetroAchievements plugin for EmuDeck",
+    "description": "Plugin for viewing RetroAchievements progress. Part of the EmuDeck Project",
     "image": "https://opengraph.githubassets.com/1/EmuDeck/Emuchievements"
   }
 }

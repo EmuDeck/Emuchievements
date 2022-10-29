@@ -1,7 +1,7 @@
 {
   "name": "emuchievements",
   "version": "0.0.1",
-  "description": "RetroAchievements plugin for EmuDeck",
+  "description": "Plugin for viewing RetroAchievements progress. Part of the EmuDeck Project",
   "scripts": {
     "build": "shx rm -rf dist && rollup -c",
     "watch": "rollup -c -w",
