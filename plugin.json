@@ -3,7 +3,7 @@
   "author": "Witherking25",
   "flags": [],
   "publish": {
-    "tags": ["EmuDeck"],
+    "tags": ["EmuDeck", "retroachievements"],
     "description": "Plugin for viewing RetroAchievements progress. Part of the EmuDeck Project",
     "image": "https://opengraph.githubassets.com/1/EmuDeck/Emuchievements"
   }

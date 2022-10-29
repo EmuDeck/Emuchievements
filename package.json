@@ -1,6 +1,6 @@
 {
   "name": "emuchievements",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Plugin for viewing RetroAchievements progress. Part of the EmuDeck Project",
   "scripts": {
     "build": "shx rm -rf dist && rollup -c",
@@ -14,7 +14,6 @@
   "keywords": [
     "decky",
     "plugin",
-    "plugin-template",
     "steam-deck",
     "deck",
     "retroachievements",

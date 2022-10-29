@@ -8,7 +8,8 @@ import {
 import {ServerAPI} from "decky-frontend-lib";
 
 export let globalState: GlobalState = {
-    current_game: 0
+    current_game: 0,
+    current_achievement: 0
 }
 
 export const getData = async (serverAPI: ServerAPI) => {

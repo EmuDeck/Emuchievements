@@ -1,90 +1,91 @@
-import {Component} from "react";
-import {APIState, GameProps} from "../interfaces";
-import {getData, globalState} from "../state";
+import {GameProps} from "../interfaces";
 import {
     Focusable,
     joinClassNames,
     PanelSection,
-    ProgressBarWithInfo,
+    ProgressBarWithInfo, Router,
     scrollClasses,
     staticClasses,
     SteamSpinner
 } from "decky-frontend-lib";
 import {AchievementComponent} from "./achievementComponent";
+import {ApiComponent} from "./apiComponent";
+import {globalState} from "../state";
 
-export class GameComponent extends Component<GameProps, APIState> {
-    state: Readonly<APIState> = {
-        games: [],
-        achievements: {},
-        loading: true
-    };
+export class GameComponent extends ApiComponent<GameProps>
+{
+	render()
+	{
+		if (!this.state.loading)
+		{
+			let game = this.state.achievements[globalState.current_game]
+			return game ? (
+				<Focusable style={{
+					marginTop: "40px",
+					marginBottom: "80px",
+					height: "calc( 100% - 120px )"
+				}}>
+					<div style={{
+						backgroundImage: `url(${game.image_icon})`,
+						height: "20%",
+						backgroundPosition: "center",
+						backgroundRepeat: "no-repeat",
+						backgroundSize: "contain",
+						position: "relative"
+					}}>
+						<h1>{game.title}</h1>
+						<div style={{
+							display: "flex",
+							justifyContent: "left"
+						}}>
+							<ProgressBarWithInfo
+								nProgress={(() =>
+								{
+									return game.num_achievements ? game.num_achieved ? (game.num_achieved / game.num_achievements) * 100.0 : 0 : 0;
+								})()}
+								sOperationText={`Achieved: ${(game.num_achieved) ? game.num_achieved : 0}/${(game.num_achievements) ? game.num_achievements : 0}`}
+							/>
+							<ProgressBarWithInfo
+								nProgress={(() =>
+								{
+									return game.num_achievements ? game.num_achieved_hardcore ? (game.num_achieved_hardcore / game.num_achievements) * 100.0 : 0 : 0;
+								})()}
+								sOperationText={`Hardcore: ${(game.num_achieved_hardcore) ? game.num_achieved_hardcore : 0}/${(game.num_achievements) ? game.num_achievements : 0}`}
+							/>
+						</div>
+					</div>
+					<div
+						className={joinClassNames(staticClasses.TabGroupPanel, scrollClasses.ScrollPanel, scrollClasses.ScrollY)}
+						style={{
+							marginTop: "40px",
+							marginBottom: "80px",
+							height: "calc( 100% - 120px )"
+						}}
+					>
+						<PanelSection title="Achievements">
+							{
+								game.achievements ? game.achievements.map(achievement =>
 
-    componentDidMount() {
-        let {serverAPI} = this.props;
-        getData(serverAPI).then(value => {
-            this.setState(value)
-        })
-    }
+									<Focusable onActivate={() =>
+									{
+                                        if (achievement.id)
+                                        {
+                                            globalState.current_achievement = achievement.id
+                                            Router.Navigate("/emuchievements/achievement")
+                                        }
+									}}>
+										<AchievementComponent achievement={achievement}/>
+									</Focusable>
+								) : <div/>
+							}
+						</PanelSection>
+					</div>
+				</Focusable>
+			) : <div/>;
 
-    render() {
-        if (!this.state.loading) {
-            let game = this.state.achievements[globalState.current_game]
-            return (
-                <Focusable style={{
-                    marginTop: "40px",
-                    marginBottom: "80px",
-                    height: "calc( 100% - 120px )"
-                }}>
-                    <section>
-                        <div style={{
-                            backgroundImage: `url(${game?.image_icon})`,
-                            height: "50%",
-                            backgroundPosition: "center",
-                            backgroundRepeat: "no-repeat",
-                            backgroundSize: "initial",
-                            position: "relative"
-                        }}>
-                            <h1>{`${game?.title}`}</h1>
-                            <div style={{
-                                display: "flex",
-                                justifyContent: "left"
-                            }}>
-                                <ProgressBarWithInfo
-                                    nProgress={(() => {
-                                        if (game?.num_achieved && game?.num_achievements)
-                                            return (game?.num_achieved / game?.num_achievements) * 100.0
-                                        else
-                                            return 0
-                                    })()}
-                                    sOperationText={`${game?.num_achieved}/${game?.num_achievements}`}
-                                />
-                            </div>
-                        </div>
-                    </section>
-                    <div
-                        className={joinClassNames(staticClasses.TabGroupPanel, scrollClasses.ScrollPanel, scrollClasses.ScrollY)}
-                        style={{
-                            marginTop: "40px",
-                            marginBottom: "80px",
-                            height: "calc( 100% - 120px )"
-                        }}
-                    >
-                        <PanelSection title="Achievements">
-                            {
-                                game?.achievements?.map(achievement =>
-
-                                    <Focusable onActivate={() => {
-                                    }}>
-                                        <AchievementComponent achievement={achievement}/>
-                                    </Focusable>
-                                )
-                            }
-                        </PanelSection>
-                    </div>
-                </Focusable>
-            )
-        } else {
-            return <SteamSpinner/>
-        }
-    }
+		} else
+		{
+			return <SteamSpinner/>
+		}
+	}
 }

@@ -1,23 +1,33 @@
 import {ServerAPI} from "decky-frontend-lib";
 
-export interface LoginProps {
+export interface APIProps
+{
     serverAPI: ServerAPI
 }
 
-export interface EmuchievementsProps {
-    serverAPI: ServerAPI
+export interface LoginProps extends APIProps
+{
 }
 
-export interface HomeProps {
-    serverAPI: ServerAPI
+export interface EmuchievementsProps extends APIProps
+{
 }
 
-export interface GameProps {
-    serverAPI: ServerAPI
+export interface HomeProps extends APIProps
+{
 }
 
-export interface AchievementProps {
+export interface GameProps extends APIProps
+{
+}
+
+export interface AchievementProps
+{
     achievement: Achievement
+}
+
+export interface DescriptionProps extends APIProps
+{
 }
 
 export interface Achievement {
@@ -102,5 +112,6 @@ export interface LoginState {
 }
 
 export interface GlobalState {
-    current_game: number
+    current_game: number,
+    current_achievement: number
 }
