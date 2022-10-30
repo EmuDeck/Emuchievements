@@ -43,7 +43,6 @@ class Plugin:
         await self.read(self)
         self.username = await self.getSetting(self, "username", None)
         self.api_key = await self.getSetting(self, "api_key", None)
-        pass
 
     async def read(self):
         self.settings.read()

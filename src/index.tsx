@@ -6,12 +6,9 @@ import {LoginComponent} from "./components/loginComponent";
 import {DescriptionComponent} from "./components/descriptionComponent";
 
 export default definePlugin((serverAPI: ServerAPI) => {
-    serverAPI.routerHook.addRoute("/emuchievements/game", () => <GameComponent serverAPI={serverAPI}/>, {
-    });
-    serverAPI.routerHook.addRoute("/emuchievements/achievement", () => <DescriptionComponent serverAPI={serverAPI}/>, {
-    });
-    serverAPI.routerHook.addRoute("/emuchievements/login", () => <LoginComponent serverAPI={serverAPI}/>, {
-    });
+    serverAPI.routerHook.addRoute("/emuchievements/game", () => <GameComponent serverAPI={serverAPI}/>);
+    serverAPI.routerHook.addRoute("/emuchievements/achievement", () => <DescriptionComponent serverAPI={serverAPI}/>);
+    serverAPI.routerHook.addRoute("/emuchievements/login", () => <LoginComponent serverAPI={serverAPI}/>);
     return {
         title: <div className={staticClasses.Title}>Emuchievements</div>,
         content: <EmuchievementsComponent serverAPI={serverAPI}/>,
