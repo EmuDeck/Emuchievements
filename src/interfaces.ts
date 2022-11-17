@@ -1,4 +1,5 @@
 import {ServerAPI} from "decky-frontend-lib";
+import {AchievementManager} from "./AchievementsManager";
 
 export interface APIProps
 {
@@ -11,6 +12,7 @@ export interface LoginProps extends APIProps
 
 export interface EmuchievementsProps extends APIProps
 {
+	achievementManager: AchievementManager
 }
 
 export interface HomeProps extends APIProps
@@ -93,6 +95,12 @@ export interface Login {
     api_key: string
 }
 
+
+export interface GameInfo {
+	id: number,
+	hash: string
+}
+
 export interface GetUserRecentlyPlayedGamesParams {
     count: number
 }
@@ -101,14 +109,26 @@ export interface GetGameInfoAndUserProgressParams {
     game_id: number
 }
 
+export interface GetGameCacheParams {
+	app_id: number
+}
+
+export interface PutGameCacheParams {
+	app_id: number,
+	game_id: number
+}
+
 export interface APIState {
     games: Game[],
     achievements: { [key: number]: Game },
     loading: boolean
 }
 
-export interface LoginState {
-    login: boolean
+export interface EmuchievementsState {
+	login: boolean,
+	app_ids: number[],
+	loaded: boolean,
+	hide: boolean
 }
 
 export interface GlobalState {

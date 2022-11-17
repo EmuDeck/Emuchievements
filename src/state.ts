@@ -1,15 +1,21 @@
 import {
-    APIState,
-    Game,
-    GetGameInfoAndUserProgressParams,
-    GetUserRecentlyPlayedGamesParams,
-    GlobalState
+	APIState,
+	Game,
+	GetGameInfoAndUserProgressParams,
+	GetUserRecentlyPlayedGamesParams,
+	GlobalState
 } from "./interfaces";
 import {ServerAPI} from "decky-frontend-lib";
 
 export let globalState: GlobalState = {
     current_game: 0,
     current_achievement: 0
+}
+
+export interface AchievementsData {
+	game: Game,
+	last_updated_at: Date,
+	game_id?: number
 }
 
 export const getData = async (serverAPI: ServerAPI) => {

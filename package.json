@@ -1,56 +1,64 @@
 {
-  "name": "emuchievements",
-  "version": "1.0.1",
-  "description": "Plugin for viewing RetroAchievements progress. Part of the EmuDeck Project",
-  "scripts": {
-    "build": "shx rm -rf dist && rollup -c",
-    "watch": "rollup -c -w",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/EmuDeck/Emuchievements.git"
-  },
-  "keywords": [
-    "decky",
-    "plugin",
-    "steam-deck",
-    "deck",
-    "retroachievements",
-    "EmuDeck"
-  ],
-  "author": "Witherking25 <witherking@withertech.com>",
-  "license": "GPL-3",
-  "bugs": {
-    "url": "https://github.com/EmuDeck/Emuchievements/issues"
-  },
-  "homepage": "https://github.com/EmuDeck/Emuchievements#readme",
-  "devDependencies": {
-    "@rollup/plugin-commonjs": "^21.1.0",
-    "@rollup/plugin-json": "^4.1.0",
-    "@rollup/plugin-node-resolve": "^13.3.0",
-    "@rollup/plugin-replace": "^4.0.0",
-    "@rollup/plugin-typescript": "^8.3.3",
-    "@types/react": "16.14.0",
-    "@types/webpack": "^5.28.0",
-    "rollup": "^2.77.1",
-    "rollup-plugin-import-assets": "^1.1.1",
-    "shx": "^0.3.4",
-    "tslib": "^2.4.0",
-    "typescript": "^4.7.4",
-    "react-router": "^6.4.2"
-  },
-  "dependencies": {
-    "conf": "^10.2.0",
-    "decky-frontend-lib": "^3.0.0",
-    "react-icons": "^4.4.0"
-  },
-  "pnpm": {
-    "peerDependencyRules": {
-      "ignoreMissing": [
-        "react",
-        "react-dom"
-      ]
-    }
-  }
+	"name": "emuchievements",
+	"version": "2.0.0",
+	"description": "Plugin for viewing RetroAchievements progress. Part of the EmuDeck Project",
+	"scripts": {
+		"build": "shx rm -rf dist && rollup -c",
+		"watch": "rollup -c -w",
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"package": "dbuild build",
+		"start": "dbuild deploy"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/EmuDeck/Emuchievements.git"
+	},
+	"keywords": [
+		"decky",
+		"plugin",
+		"steam-deck",
+		"deck",
+		"retroachievements",
+		"EmuDeck"
+	],
+	"author": "Witherking25 <witherking@withertech.com>",
+	"license": "GPL-3",
+	"bugs": {
+		"url": "https://github.com/EmuDeck/Emuchievements/issues"
+	},
+	"homepage": "https://github.com/EmuDeck/Emuchievements#readme",
+	"devDependencies": {
+		"@rollup/plugin-commonjs": "^21.1.0",
+		"@rollup/plugin-json": "^4.1.0",
+		"@rollup/plugin-node-resolve": "^13.3.0",
+		"@rollup/plugin-replace": "^4.0.0",
+		"@rollup/plugin-typescript": "^8.3.3",
+		"@types/lodash": "^4.14.184",
+		"@types/react": "16.14.0",
+		"@types/webpack": "^5.28.0",
+		"react-router": "^6.4.2",
+		"rollup": "^2.77.1",
+		"rollup-plugin-import-assets": "^1.1.1",
+		"shx": "^0.3.4",
+		"tslib": "^2.4.0",
+		"typescript": "^4.7.4",
+		"deckbuild": "^1.0.9"
+	},
+	"dependencies": {
+		"conf": "^10.2.0",
+		"decky-frontend-lib": "^3.0.0",
+		"localforage": "^1.10.0",
+		"lodash": "^4.17.21",
+		"mobx": "5",
+		"ts-bidirectional-map": "^1.0.2",
+		"react-icons": "^4.4.0"
+	},
+	"pnpm": {
+		"peerDependencyRules": {
+			"ignoreMissing": [
+				"react",
+				"react-dom"
+			]
+		}
+	}
 }
