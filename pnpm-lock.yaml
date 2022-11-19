@@ -6,14 +6,14 @@ specifiers:
   '@rollup/plugin-node-resolve': ^13.3.0
   '@rollup/plugin-replace': ^4.0.0
   '@rollup/plugin-typescript': ^8.3.3
-  '@types/lodash': ^4.14.184
+  '@types/lodash-es': ^4.14.184
   '@types/react': 16.14.0
   '@types/webpack': ^5.28.0
   conf: ^10.2.0
   deckbuild: ^1.0.9
   decky-frontend-lib: ^3.0.0
   localforage: ^1.10.0
-  lodash: ^4.17.21
+  lodash-es: ^4.17.21
   mobx: '5'
   react-icons: ^4.4.0
   react-router: ^6.4.2
@@ -28,7 +28,7 @@ dependencies:
   conf: 10.2.0
   decky-frontend-lib: 3.0.0
   localforage: 1.10.0
-  lodash: 4.17.21
+  lodash-es: 4.17.21
   mobx: 5.15.7
   react-icons: 4.4.0
   ts-bidirectional-map: 1.0.2
@@ -39,7 +39,7 @@ devDependencies:
   '@rollup/plugin-node-resolve': 13.3.0_rollup@2.77.1
   '@rollup/plugin-replace': 4.0.0_rollup@2.77.1
   '@rollup/plugin-typescript': 8.3.3_ekpmegaybmymq5m2rlmygb35zm
-  '@types/lodash': 4.14.188
+  '@types/lodash-es': 4.17.6
   '@types/react': 16.14.0
   '@types/webpack': 5.28.0
   deckbuild: 1.0.9
@@ -215,6 +215,12 @@ packages:
 
   /@types/json-schema/7.0.11:
     resolution: {integrity: sha512-wOuvG1SN4Us4rez+tylwwwCV1psiNVOkJeM3AUWUNWg/jDQY2+HE/444y5gc+jBmRqASOm2Oeh5c1axHobwRKQ==}
+    dev: true
+
+  /@types/lodash-es/4.17.6:
+    resolution: {integrity: sha512-R+zTeVUKDdfoRxpAryaQNRKk3105Rrgx2CFRClIgRGaqDTdjsm8h6IYA8ir584W3ePzkZfst5xIgDwYrlh9HLg==}
+    dependencies:
+      '@types/lodash': 4.14.188
     dev: true
 
   /@types/lodash/4.14.188:
@@ -919,8 +925,8 @@ packages:
       p-locate: 3.0.0
       path-exists: 3.0.0
 
-  /lodash/4.17.21:
-    resolution: {integrity: sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==}
+  /lodash-es/4.17.21:
+    resolution: {integrity: sha512-mKnC+QJ9pWVzv+C4/U3rRsHapFfHvQFoFB92e52xeyGMcX6/OlIl78je1u8vePzYZSkkogMPJ2yjxxsb89cxyw==}
     dev: false
 
   /lru-cache/6.0.0:

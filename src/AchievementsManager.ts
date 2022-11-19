@@ -1,9 +1,11 @@
-import {AllAchievements, GlobalAchievements, Hook} from "./SteamClient";
+import {AllAchievements, AppDetails, GlobalAchievements, Hook} from "./SteamClient";
 import {ServerAPI} from "decky-frontend-lib";
 import {AchievementsData} from "./state";
 import {retroAchievementToSteamAchievement} from "./Mappers";
 import localforage from "localforage";
 import {Game, GetGameInfoAndUserProgressParams} from "./interfaces";
+import {debounce} from "lodash-es";
+import {runInAction} from "mobx";
 
 const database = 'emuchievements';
 
@@ -68,21 +70,17 @@ export class AchievementManager
 				if (shortcut && shortcut.data.strExePath)
 				{
 					const exe = shortcut.data.strExePath
-					console.log(exe)
 					const rom = exe.match(new RegExp(romRegex, "i"))?.[0];
 					if (rom)
 					{
-						console.log(rom)
 						const md5 = (await serverAPI.callPluginMethod<{ path: string }, string>("Hash", {path: rom}));
 						if (md5.success)
 						{
-							console.log(md5.result)
 							const response = (await serverAPI.fetchNoCors<{ body: string; status: number }>(`https://retroachievements.org/dorequest.php?r=gameid&m=${md5.result}`, {
 								method: "GET"
 							}))
 							if (response.success)
 							{
-								console.log(response.result)
 								if (response.result.status==200)
 								{
 									const game_id: number = (JSON.parse(response.result.body) as { "Success": boolean, "GameID": number }).GameID;
@@ -93,13 +91,11 @@ export class AchievementManager
 										}));
 										if (achievement.success)
 										{
-											console.log(achievement.result)
 											const result: AchievementsData = {
 												game_id: game_id,
 												game: achievement.result,
 												last_updated_at: new Date()
 											}
-											console.log(result);
 											await this.updateCache(`${app_id}`, result);
 											resolve(result);
 										} else reject(new Error(achievement.result));
@@ -130,11 +126,8 @@ export class AchievementManager
 
 	fetchAchievements(serverAPI: ServerAPI, app_id: number): {all: AllAchievements, global: GlobalAchievements}
 	{
-		console.log(this.achievements);
-		console.log(this.loading);
 		if (((this.loading)[app_id] == undefined) ? (this.loading)[0] : (this.loading)[app_id])
 		{
-			console.log("test1");
 			return {
 				all: {
 					loading: true
@@ -147,7 +140,6 @@ export class AchievementManager
 		else if (!((((this.achievements)[app_id] == undefined) ? (this.achievements)[0] : (this.achievements)[app_id]).data))
 		{
 			(this.loading)[app_id] = true;
-			console.log(this.loading);
 			this.getAchievementsForGame(serverAPI, app_id).then((retro: AchievementsData | undefined): {all: AllAchievements, global: GlobalAchievements} =>
 			{
 				let achievements: AllAchievements = {
@@ -177,7 +169,6 @@ export class AchievementManager
 							globalAchievements.data[steam.strID] = (((achievement.num_awarded ? achievement.num_awarded : 0) / (retro.game.num_distinct_players_casual ? retro.game.num_distinct_players_casual : 1)) * 100.0)
 						}
 					})
-					console.log(achievements, globalAchievements);
 					return {
 						all: achievements,
 						global: globalAchievements
@@ -208,7 +199,6 @@ export class AchievementManager
 			}
 		} else
 		{
-			console.log("test3");
 			return {
 				all: (this.achievements)[app_id],
 				global: (this.globalAchievements)[app_id]
@@ -218,37 +208,35 @@ export class AchievementManager
 
 	async init(): Promise<void> {
 		let shortcuts = await SteamClient.Apps.GetAllShortcuts()
-		for (const app_id of shortcuts.map(shortcut => shortcut.appid))
-		{
-			await this.fetchAchievementsData(this.serverAPI, app_id);
-			this.appDataUnregister = appDetailsStore.RegisterForAppData(app_id, (data) => {
-				console.log("got app", data)
-				if (!!this.achievements[app_id] && !!data)
-				{
-					const ret = this.achievements[app_id]?.data
-					if (!!ret)
-					{
-						data.achievements.nAchieved = Object.keys(ret.achieved).length;
-						data.achievements.nTotal = Object.keys(ret.achieved).length + Object.keys(ret.unachieved).length;
-						// Object.entries(ret.achieved).forEach(([, value]) => {
-						// 	data.achievements.vecHighlight.push(value)
-						// });
-						// Object.entries(ret.unachieved).forEach(([, value]) => {
-						// 	data.achievements.vecUnachieved.push(value)
-						// });
-					}
-				}
-			});
-			let data = appDetailsStore.GetAppDetails(app_id);
+		const appDataThrottled = debounce((data: AppDetails, app_id: number) => {
 			if (!!this.achievements[app_id] && !!data)
 			{
 				const ret = this.achievements[app_id]?.data
 				if (!!ret)
 				{
-					data.achievements.nAchieved = Object.keys(ret.achieved).length;
-					data.achievements.nTotal = Object.keys(ret.achieved).length + Object.keys(ret.unachieved).length;
+					console.log(data)
+					runInAction(() =>
+					{
+						data.achievements.nAchieved = Object.keys(ret.achieved).length;
+						data.achievements.nTotal = Object.keys(ret.achieved).length + Object.keys(ret.unachieved).length;
+						Object.entries(ret.achieved).forEach(([, value]) => {
+							data.achievements.vecHighlight.push(value)
+						});
+						Object.entries(ret.unachieved).forEach(([, value]) => {
+							data.achievements.vecUnachieved.push(value)
+						});
+					});
+
 				}
 			}
+		}, 1000, {leading: true});
+		for (const app_id of shortcuts.map(shortcut => shortcut.appid))
+		{
+			await this.fetchAchievementsData(this.serverAPI, app_id);
+
+			this.appDataUnregister = appDetailsStore.RegisterForAppData(app_id, (details) => appDataThrottled(details, app_id));
+			let data = appDetailsStore.GetAppDetails(app_id);
+			appDataThrottled(data, app_id);
 		}
 	}
 
@@ -260,8 +248,6 @@ export class AchievementManager
 	}
 
 	isReady(steamAppId: number): boolean {
-		console.log(steamAppId, this.achievements[steamAppId])
-		console.log(steamAppId, this.achievements[steamAppId]?.loading)
 		return !!this.achievements[steamAppId] && !this.achievements[steamAppId].loading;
 	}
 }

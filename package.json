@@ -33,7 +33,7 @@
 		"@rollup/plugin-node-resolve": "^13.3.0",
 		"@rollup/plugin-replace": "^4.0.0",
 		"@rollup/plugin-typescript": "^8.3.3",
-		"@types/lodash": "^4.14.184",
+		"@types/lodash-es": "^4.14.184",
 		"@types/react": "16.14.0",
 		"@types/webpack": "^5.28.0",
 		"react-router": "^6.4.2",
@@ -48,7 +48,7 @@
 		"conf": "^10.2.0",
 		"decky-frontend-lib": "^3.0.0",
 		"localforage": "^1.10.0",
-		"lodash": "^4.17.21",
+		"lodash-es": "^4.17.21",
 		"mobx": "5",
 		"ts-bidirectional-map": "^1.0.2",
 		"react-icons": "^4.4.0"

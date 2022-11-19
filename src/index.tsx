@@ -1,5 +1,4 @@
 import {
-	afterPatch,
 	callOriginal,
 	definePlugin,
 	findModuleChild,
@@ -31,15 +30,9 @@ export default definePlugin((serverAPI: ServerAPI) =>
 	serverAPI.routerHook.addRoute("/emuchievements/game", () => <GameComponent serverAPI={serverAPI}/>);
 	serverAPI.routerHook.addRoute("/emuchievements/achievement", () => <DescriptionComponent serverAPI={serverAPI}/>);
 	serverAPI.routerHook.addRoute("/emuchievements/login", () => <LoginComponent serverAPI={serverAPI}/>);
-	// serverAPI.routerHook.addPatch("/library/app/:appid/achievements/my/individual", route =>
-	// {
-	//     // console.log(route.children);
-	//     return route;
-	// });
 	const logger = new Logger("Init");
 
 	const achievementManager = new AchievementManager(serverAPI);
-
 	let d = (findModuleChild(module =>
 	{
 		if (typeof module!=='object') return undefined;
@@ -79,15 +72,6 @@ export default definePlugin((serverAPI: ServerAPI) =>
 				return callOriginal;
 			}
 	)
-	let globalAfterPatch = afterPatch(
-			d.__proto__,
-			"GetGlobalAchievements",
-			(_args, ret) =>
-			{
-				console.log(ret);
-				return ret;
-			}
-	)
 
 	let appPatch = patchAppPage(serverAPI, achievementManager);
 
@@ -125,29 +109,6 @@ export default definePlugin((serverAPI: ServerAPI) =>
 		});
 	});
 
-	// let changeHook = SteamClient.Apps.RegisterForAppOverviewChanges(() =>
-	// {
-	// 	SteamClient.Apps.GetAllShortcuts().then(shortcuts =>
-	// 	{
-	// 		shortcuts.map(shortcut => shortcut.appid).forEach(app_id =>
-	// 		{
-	// 			refreshAchievements(serverAPI, app_id);
-	// 		});
-	// 	});
-	// });
-
-	// let uiHook = SteamClient.Apps.RegisterForGameActionShowUI(() =>
-	// {
-	// 	console.log(e, f);
-	// 	SteamClient.Apps.GetAllShortcuts().then(shortcuts =>
-	// 	{
-	// 		shortcuts.map(shortcut => shortcut.appid).forEach(app_id =>
-	// 		{
-	// 			refreshAchievements(serverAPI, app_id);
-	// 		});
-	// 	});
-	// });
-
 	console.log(d);
 	return {
 		title: <div className={staticClasses.Title}>Emuchievements</div>,
@@ -159,13 +120,9 @@ export default definePlugin((serverAPI: ServerAPI) =>
 			serverAPI.routerHook.removeRoute("/emuchievements/achievement");
 			serverAPI.routerHook.removeRoute("/emuchievements/login");
 			serverAPI.routerHook.removePatch("/library/app/:appid", appPatch)
-			// dataPatch.unpatch();
 			myPatch.unpatch();
 			globalPatch.unpatch();
-			globalAfterPatch.unpatch();
 			achievementManager.deinit();
-			// changeHook.unregister();
-			// uiHook.unregister();
 		},
 	};
 });

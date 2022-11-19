@@ -36,6 +36,8 @@ dist/
 
 __pycache__/
 
+.pnpm-store/
+
 /.yalc
 yalc.lock
 
