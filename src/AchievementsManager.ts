@@ -219,9 +219,11 @@ export class AchievementManager
 					{
 						data.achievements.nAchieved = Object.keys(ret.achieved).length;
 						data.achievements.nTotal = Object.keys(ret.achieved).length + Object.keys(ret.unachieved).length;
+						data.achievements.vecHighlight = [];
 						Object.entries(ret.achieved).forEach(([, value]) => {
 							data.achievements.vecHighlight.push(value)
 						});
+						data.achievements.vecUnachieved = [];
 						Object.entries(ret.unachieved).forEach(([, value]) => {
 							data.achievements.vecUnachieved.push(value)
 						});

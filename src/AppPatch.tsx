@@ -41,153 +41,48 @@ export const patchAppPage = (serverAPI: ServerAPI, achievementManager: Achieveme
 								{
 									details.achievements.nAchieved = Object.keys(ret.all.data.achieved).length;
 									details.achievements.nTotal = Object.keys(ret.all.data.achieved).length + Object.keys(ret.all.data.unachieved).length;
+									details.achievements.vecHighlight = [];
 									Object.entries(ret.all.data.achieved).forEach(([, value]) =>
 									{
 										details.achievements.vecHighlight.push(value)
 									});
+									details.achievements.vecUnachieved = [];
 									Object.entries(ret.all.data.unachieved).forEach(([, value]) =>
 									{
 										details.achievements.vecUnachieved.push(value)
 									});
 								}
 							});
+							wrapReactType(ret1.props.children);
+							afterPatch(
+									ret1.props.children.type,
+									"type",
+									(_: Record<string, unknown>[], ret2: ReactElement) =>
+									{
+										let element = findInReactTree(ret2, x => x?.props?.onTheaterMode);
+										wrapReactClass(element);
+										afterPatch(
+												element.type.prototype,
+												"render",
+												(_: Record<string, unknown>[], ret3: ReactElement) =>
+												{
+													let element2 = findInReactTree(ret3, x => x?.props?.setSections);
+													afterPatch(
+															element2,
+															"type",
+															(_: Record<string, unknown>[], ret4: ReactElement) =>
+															{
+																(ret4.props.setSections as Set<string>).add("achievements");
+																return ret4;
+															}
+													);
+													return ret3;
+												}
+										);
+										return ret2;
+									}
+							);
 						}
-
-						wrapReactType(ret1.props.children);
-						afterPatch(
-								ret1.props.children.type,
-								"type",
-								(_: Record<string, unknown>[], ret2: ReactElement) =>
-								{
-									let element = findInReactTree(ret2, x => x?.props?.onTheaterMode);
-									wrapReactClass(element);
-									afterPatch(
-											element.type.prototype,
-											"render",
-											(_: Record<string, unknown>[], ret3: ReactElement) =>
-											{
-												let element1 = findInReactTree(ret3, x => x?.props?.setSections);
-												afterPatch(
-														element1,
-														"type",
-														(_: Record<string, unknown>[], ret4: ReactElement) =>
-														{
-															let wrap1: any;
-															let wrap2: any;
-															let wrap3: any;
-
-															afterPatch(
-																	ret4,
-																	"type",
-																	(_: Record<string, unknown>[], ret5: ReactElement) =>
-																	{
-																		let element2 = findInReactTree(ret5, x => x?.props?.onNav);
-																		wrapReactType(element2);
-																		if (wrap1)
-																		{
-																			element2.type = wrap1;
-																		} else
-																		{
-																			wrap1 = element2.type;
-																			afterPatch(
-																					element2.type,
-																					"render",
-																					(_: Record<string, unknown>[], ret6: ReactElement) =>
-																					{
-																						let element3 = findInReactTree(ret6, x => x?.type?.render);
-																						if (wrap2)
-																						{
-																							element3.type = wrap2;
-																						} else
-																						{
-																							wrapReactType(element3);
-																							wrap2 = element3.type;
-																							afterPatch(
-																									element3.type,
-																									"render",
-																									(_: Record<string, unknown>[], ret7: ReactElement) =>
-																									{
-																										let element4 = findInReactTree(ret7, x => x?.props?.onTheaterMode);
-																										if (wrap3)
-																										{
-																											element4.type = wrap3;
-																										} else
-																										{
-																											wrapReactType(element4);
-																											wrap3 = element4.type;
-																											afterPatch(
-																													element4.type,
-																													"render",
-																													(_: Record<string, unknown>[], ret8: ReactElement) =>
-																													{
-																														let element5 = findInReactTree(ret8, x => x?.props?.statusPanelType==1);
-																														wrapReactClass(element5);
-																														afterPatch(
-																																element5.type.prototype,
-																																"render",
-																																(_: Record<string, unknown>[], ret9: ReactElement) =>
-																																{
-																																	// noinspection JSPotentiallyInvalidConstructorUsage
-																																	let element6 = findInReactTree(ret9, x => x?.[1]?.type?.prototype?.render && !x?.[1]?.type?.prototype?.shouldComponentUpdate)?.[0];
-																																	wrapReactClass(element6);
-																																	afterPatch(
-																																			element6.type.prototype,
-																																			"render",
-																																			(_: Record<string, unknown>[], ret10: ReactElement) =>
-																																			{
-																																				let element7 = findInReactTree(ret10, x => x?.type?.name==="re");
-																																				// let element7 = ret10?.props?.children?.[5]
-
-																																				if (achievementManager.isReady(appId))
-																																				{
-																																					ret10?.props?.children.push(
-																																							<div>
-																																								<DialogButton
-																																										onClick={() =>
-																																										{
-																																											Router.Navigate(`/library/app/${appId}/achievements/my/individual`)
-																																										}}>
-																																									Retroachievements
-																																								</DialogButton>
-																																							</div>
-																																					)
-																																				}
-
-																																				wrapReactClass(element7);
-																																				element7.props.onSeek = (_: string) =>
-																																				{
-																																					Router.Navigate(`/library/app/${appId}/achievements/my/individual`)
-																																				}
-																																				return ret10;
-																																			}
-																																	);
-																																	return ret9;
-																																}
-																														);
-																														return ret8;
-																													}
-																											);
-																										}
-																										return ret7;
-																									}
-																							);
-																						}
-																						return ret6;
-																					}
-																			);
-																		}
-																		return ret5;
-																	}
-															);
-															return ret4;
-														}
-												);
-												return ret3;
-											}
-									);
-									return ret2;
-								}
-						);
 					}
 					return ret1;
 				}
