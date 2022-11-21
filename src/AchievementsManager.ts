@@ -58,7 +58,7 @@ export class AchievementManager
 		return minutesBetweenDates > 5 || await this.getCache(appId)===null;
 	};
 
-	public async getAchievementsForGame(serverAPI: ServerAPI, app_id: number)
+	public async getAchievementsForGame(serverAPI: ServerAPI, app_id: number): Promise<AchievementsData | undefined>
 	{
 		return new Promise<AchievementsData | undefined>(async (resolve, reject) =>
 		{
@@ -108,20 +108,6 @@ export class AchievementManager
 				} else reject(new Error(`${app_id}: ${shortcut}`));
 			}
 		});
-	}
-
-	async fetchAchievementsData(serverAPI: ServerAPI, app_id: number): Promise<AchievementsData | undefined>
-	{
-		this.fetchAchievements(serverAPI, app_id);
-		let cache = await this.getCache(`${app_id}`)
-		if (cache && !await this.needCacheUpdate(cache.last_updated_at, `${app_id}`))
-		{
-			return cache;
-		}
-		else
-		{
-			return await this.getAchievementsForGame(serverAPI, app_id);
-		}
 	}
 
 	fetchAchievements(serverAPI: ServerAPI, app_id: number): {all: AllAchievements, global: GlobalAchievements}
@@ -234,7 +220,7 @@ export class AchievementManager
 		}, 1000, {leading: true});
 		for (const app_id of shortcuts.map(shortcut => shortcut.appid))
 		{
-			await this.fetchAchievementsData(this.serverAPI, app_id);
+			await this.getAchievementsForGame(this.serverAPI, app_id);
 
 			this.appDataUnregister = appDetailsStore.RegisterForAppData(app_id, (details) => appDataThrottled(details, app_id));
 			let data = appDetailsStore.GetAppDetails(app_id);

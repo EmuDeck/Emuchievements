@@ -53,36 +53,37 @@ export const patchAppPage = (serverAPI: ServerAPI, achievementManager: Achieveme
 									});
 								}
 							});
-							wrapReactType(ret1.props.children);
-							afterPatch(
-									ret1.props.children.type,
-									"type",
-									(_: Record<string, unknown>[], ret2: ReactElement) =>
-									{
-										let element = findInReactTree(ret2, x => x?.props?.onTheaterMode);
-										wrapReactClass(element);
-										afterPatch(
-												element.type.prototype,
-												"render",
-												(_: Record<string, unknown>[], ret3: ReactElement) =>
-												{
-													let element2 = findInReactTree(ret3, x => x?.props?.setSections);
-													afterPatch(
-															element2,
-															"type",
-															(_: Record<string, unknown>[], ret4: ReactElement) =>
-															{
-																(ret4.props.setSections as Set<string>).add("achievements");
-																return ret4;
-															}
-													);
-													return ret3;
-												}
-										);
-										return ret2;
-									}
-							);
 						}
+						wrapReactType(ret1.props.children);
+						afterPatch(
+								ret1.props.children.type,
+								"type",
+								(_: Record<string, unknown>[], ret2: ReactElement) =>
+								{
+									let element = findInReactTree(ret2, x => x?.props?.onTheaterMode);
+									wrapReactClass(element);
+									afterPatch(
+											element.type.prototype,
+											"render",
+											(_: Record<string, unknown>[], ret3: ReactElement) =>
+											{
+												let element2 = findInReactTree(ret3, x => x?.props?.setSections);
+												afterPatch(
+														element2,
+														"type",
+														(_: Record<string, unknown>[], ret4: ReactElement) =>
+														{
+															if (achievementManager.isReady(appId)) (ret4.props.setSections as Set<string>).add("achievements");
+															else (ret4.props.setSections as Set<string>).delete("achievements");
+															return ret4;
+														}
+												);
+												return ret3;
+											}
+									);
+									return ret2;
+								}
+						);
 					}
 					return ret1;
 				}
