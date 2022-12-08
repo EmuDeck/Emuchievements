@@ -456,7 +456,8 @@ class RetroAchievements:
         params |= {"z": self.username, "y": self.api_key}
         async with aiohttp.ClientSession() as session:
             async with session.get(f"{self.api_url}/{endpoint}", params=params,
-                                   ssl=helpers.get_ssl_context()) as response:
+                                   ssl=helpers.get_ssl_context()
+                                   ) as response:
                 if await response.text() == "Invalid API Key":
                     # it says "Invalid API Key" if the username is invalid as well
                     raise InvalidAuth("Your API key or username is invalid")
@@ -647,7 +648,7 @@ class RetroAchievements:
 
         return [game_converter(g) for g in games_list]  # we convert into actual games
 
-    async def GetGameInfoAndUserProgress(self, username: str, game_id: Union[int, str]) -> Game:
+    async def GetGameInfoAndUserProgress(self, username: str, game_id: int | str) -> Game:
         """Gets a game's info as well as the progress of a user on that game
         :param username: a string with the username
         :param game_id: the game's id

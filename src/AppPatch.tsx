@@ -26,6 +26,7 @@ export const patchAppPage = (serverAPI: ServerAPI, achievementManager: Achieveme
 				"renderFunc",
 				(_: Record<string, unknown>[], ret1: ReactElement) =>
 				{
+					console.log("ret1", ret1);
 					const overview: AppOverview = ret1.props.children.props.overview;
 					const details: AppDetails = ret1.props.children.props.details;
 
@@ -51,6 +52,7 @@ export const patchAppPage = (serverAPI: ServerAPI, achievementManager: Achieveme
 									{
 										details.achievements.vecUnachieved.push(value)
 									});
+									console.log("Added achievements to ", details);
 								}
 							});
 						}
@@ -60,19 +62,24 @@ export const patchAppPage = (serverAPI: ServerAPI, achievementManager: Achieveme
 								"type",
 								(_: Record<string, unknown>[], ret2: ReactElement) =>
 								{
+									console.log("ret2", ret2);
 									let element = findInReactTree(ret2, x => x?.props?.onTheaterMode);
+									console.log("element1", element);
 									wrapReactClass(element);
 									afterPatch(
 											element.type.prototype,
 											"render",
 											(_: Record<string, unknown>[], ret3: ReactElement) =>
 											{
+												console.log("ret3", ret3);
 												let element2 = findInReactTree(ret3, x => x?.props?.setSections);
+												console.log("element2", element2);
 												afterPatch(
 														element2,
 														"type",
 														(_: Record<string, unknown>[], ret4: ReactElement) =>
 														{
+															console.log("ret4", ret4);
 															if (achievementManager.isReady(appId)) (ret4.props.setSections as Set<string>).add("achievements");
 															else (ret4.props.setSections as Set<string>).delete("achievements");
 															return ret4;

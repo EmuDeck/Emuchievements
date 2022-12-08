@@ -24,14 +24,16 @@ class Plugin:
 	settings: SettingsManager
 	username: str
 	api_key: str
+	client: RetroAchievements
 	hidden: bool = False
 
 	async def Hash(self, path: str) -> str:
-		return subprocess.run([os.path.dirname(__file__) + '/bin/Emuchievements', path], stdout=subprocess.PIPE).stdout.decode('utf-8')
+		return os.popen(f"{os.path.dirname(__file__) + '/bin/Emuchievements'} \"{path}\"").read().strip()
 
 	async def Login(self, username: str, api_key: str):
 		Plugin.username = username
 		Plugin.api_key = api_key
+		Plugin.client = RetroAchievements(Plugin.username, Plugin.api_key)
 		await Plugin.commit(self)
 
 	async def isLogin(self) -> bool:
@@ -45,17 +47,17 @@ class Plugin:
 		return Plugin.hidden
 
 	async def GetUserRecentlyPlayedGames(self, count: int | None) -> List[Game]:
-		client = RetroAchievements(Plugin.username, Plugin.api_key)
-		return await client.GetUserRecentlyPlayedGames(Plugin.username, count)
+		return await Plugin.client.GetUserRecentlyPlayedGames(Plugin.username, count)
 
 	async def GetGameInfoAndUserProgress(self, game_id: int) -> Game:
-		client = RetroAchievements(Plugin.username, Plugin.api_key)
-		return await client.GetGameInfoAndUserProgress(Plugin.username, game_id)
+		return await Plugin.client.GetGameInfoAndUserProgress(Plugin.username, game_id)
 
 	# Asyncio-compatible long-running code, executed in a task when the plugin is loaded
 	async def _main(self):
 		Plugin.settings = SettingsManager("emuchievements")
 		await Plugin.read(self)
+		logger.info(f"{Plugin.username} -> {Plugin.api_key}")
+		Plugin.client = RetroAchievements(Plugin.username, Plugin.api_key)
 
 	async def read(self):
 		Plugin.settings.read()

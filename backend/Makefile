@@ -34,6 +34,7 @@ all: build
 build:
 	$(MKDIR)
 	$(CXX) $(CSOURCES) $(CXXSOURCES) $(INCLUDES) -o $(OUTPUTDIR)/Emuchievements
+	chmod +x $(OUTPUTDIR)/Emuchievements
 
 .PHONY: clean
 clean:
