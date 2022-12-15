@@ -28,15 +28,12 @@ export class LoginComponent extends Component<LoginProps, Login> {
                                 username: this.state.username,
                                 api_key: this.state.api_key
                             })
+					    // @ts-ignore
 	                        Router?.NavigateBackOrOpenMenu && Router.NavigateBackOrOpenMenu()
 	                        // @ts-ignore
-	                        Router?.WindowStore?.m_MainWindowInstance?.NavigateBack &&
+	                        Router?.WindowStore?.MainWindowInstance?.NavigateBack && Router.WindowStore.MainWindowInstance.NavigateBack();
 	                        // @ts-ignore
-	                        Router.WindowStore.m_MainWindowInstance.NavigateBack();
-	                        // @ts-ignore
-	                        Router?.WindowStore?.m_GamepadUIMainWindowInstance?.NavigateBack &&
-	                        // @ts-ignore
-	                        Router.WindowStore.m_GamepadUIMainWindowInstance.NavigateBack();
+	                        Router?.WindowStore?.GamepadUIMainWindowInstance?.NavigateBack && Router.WindowStore.GamepadUIMainWindowInstance.NavigateBack();
                         })();
                     }}>
                     </ButtonItem>

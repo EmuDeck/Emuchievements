@@ -45,12 +45,10 @@
 		"deckbuild": "^1.0.9"
 	},
 	"dependencies": {
-		"conf": "^10.2.0",
-		"decky-frontend-lib": "^3.13.0",
+		"decky-frontend-lib": "^3.13.1",
 		"localforage": "^1.10.0",
 		"lodash-es": "^4.17.21",
 		"mobx": "5",
-		"ts-bidirectional-map": "^1.0.2",
 		"react-icons": "^4.4.0"
 	},
 	"pnpm": {
