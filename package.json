@@ -3,7 +3,7 @@
 	"version": "2.0.0",
 	"description": "Plugin for viewing RetroAchievements progress. Part of the EmuDeck Project",
 	"scripts": {
-		"build": "shx rm -rf dist && rollup -c",
+		"build": "shx rm -rf dist && python/entrypoint.sh && rollup -c",
 		"watch": "rollup -c -w",
 		"test": "echo \"Error: no test specified\" && exit 1",
 		"package": "dbuild build",

@@ -40,11 +40,11 @@ export default definePlugin((serverAPI: ServerAPI) =>
 			"GetMyAchievements",
 			args =>
 			{
-				console.log(args, appStore.GetAppOverviewByAppID(args[0]), appDetailsStore.GetAppDetails(args[0]));
+				//console.log(args, appStore.GetAppOverviewByAppID(args[0]), appDetailsStore.GetAppDetails(args[0]));
 				if (appStore.GetAppOverviewByAppID(args[0]).app_type==1073741824)
 				{
-					let data = achievementManager.fetchAchievements(serverAPI, args[0]);
-					console.log(data.all);
+					let data = achievementManager.fetchAchievements(args[0]);
+					//console.log(data.all);
 					return data.all;
 				}
 				return callOriginal;
@@ -55,11 +55,11 @@ export default definePlugin((serverAPI: ServerAPI) =>
 			"GetGlobalAchievements",
 			args =>
 			{
-				console.log(args, appStore.GetAppOverviewByAppID(args[0]), appDetailsStore.GetAppDetails(args[0]));
+				//console.log(args, appStore.GetAppOverviewByAppID(args[0]), appDetailsStore.GetAppDetails(args[0]));
 				if (appStore.GetAppOverviewByAppID(args[0]).app_type==1073741824)
 				{
-					let data = achievementManager.fetchAchievements(serverAPI, args[0]);
-					console.log(data.global);
+					let data = achievementManager.fetchAchievements(args[0]);
+					//console.log(data.global);
 					return data.global;
 
 				}
@@ -103,7 +103,7 @@ export default definePlugin((serverAPI: ServerAPI) =>
 		});
 	});
 
-	console.log(d);
+	//console.log(d);
 	return {
 		title: <div className={staticClasses.Title}>Emuchievements</div>,
 		content: <EmuchievementsComponent achievementManager={achievementManager} serverAPI={serverAPI}/>,

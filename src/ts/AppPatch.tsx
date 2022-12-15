@@ -26,7 +26,7 @@ export const patchAppPage = (serverAPI: ServerAPI, achievementManager: Achieveme
 				"renderFunc",
 				(_: Record<string, unknown>[], ret1: ReactElement) =>
 				{
-					console.log("ret1", ret1);
+					//console.log("ret1", ret1);
 					const overview: AppOverview = ret1.props.children.props.overview;
 					const details: AppDetails = ret1.props.children.props.details;
 
@@ -35,7 +35,7 @@ export const patchAppPage = (serverAPI: ServerAPI, achievementManager: Achieveme
 					{
 						if (achievementManager.isReady(appId))
 						{
-							const ret = achievementManager.fetchAchievements(serverAPI, appId);
+							const ret = achievementManager.fetchAchievements(appId);
 							runInAction(() =>
 							{
 								if (ret.all.data)
@@ -52,7 +52,7 @@ export const patchAppPage = (serverAPI: ServerAPI, achievementManager: Achieveme
 									{
 										details.achievements.vecUnachieved.push(value)
 									});
-									console.log("Added achievements to ", details);
+									//console.log("Added achievements to ", details);
 								}
 							});
 						}
@@ -62,24 +62,24 @@ export const patchAppPage = (serverAPI: ServerAPI, achievementManager: Achieveme
 								"type",
 								(_: Record<string, unknown>[], ret2: ReactElement) =>
 								{
-									console.log("ret2", ret2);
+									//console.log("ret2", ret2);
 									let element = findInReactTree(ret2, x => x?.props?.onTheaterMode);
-									console.log("element1", element);
+									//console.log("element1", element);
 									wrapReactClass(element);
 									afterPatch(
 											element.type.prototype,
 											"render",
 											(_: Record<string, unknown>[], ret3: ReactElement) =>
 											{
-												console.log("ret3", ret3);
+												//console.log("ret3", ret3);
 												let element2 = findInReactTree(ret3, x => x?.props?.setSections);
-												console.log("element2", element2);
+												//console.log("element2", element2);
 												afterPatch(
 														element2,
 														"type",
 														(_: Record<string, unknown>[], ret4: ReactElement) =>
 														{
-															console.log("ret4", ret4);
+															// //console.log("ret4", ret4);
 															if (achievementManager.isReady(appId)) (ret4.props.setSections as Set<string>).add("achievements");
 															else (ret4.props.setSections as Set<string>).delete("achievements");
 															return ret4;
@@ -114,7 +114,7 @@ export const patchAppPageExperimental = (serverAPI: ServerAPI, achievementManage
 						"renderFunc",
 						(_, ret, vars) =>
 				{
-					console.log(ret)
+					//console.log(ret)
 					vars.overview = ret?.props?.children?.props?.overview
 					vars.details = ret?.props?.children?.props?.details
 					if (vars.overview && vars.details && vars.overview.app_type==1073741824)
@@ -122,12 +122,12 @@ export const patchAppPageExperimental = (serverAPI: ServerAPI, achievementManage
 						vars.appId = vars.overview.appid;
 						if (achievementManager.isReady(vars.appId))
 						{
-							const data = achievementManager.fetchAchievements(serverAPI, vars.appId);
+							const data = achievementManager.fetchAchievements(vars.appId);
 							if (data.all.data)
 							{
 								vars.details.achievements.nAchieved = Object.keys(data.all.data.achieved).length;
 								vars.details.achievements.nTotal = Object.keys(data.all.data.achieved).length + Object.keys(data.all.data.unachieved).length;
-								console.log("achievements", vars.details.achievements)
+								//console.log("achievements", vars.details.achievements)
 								// Object.entries(ret.all.data.achieved).forEach(([, value]) =>
 								// {
 								// 	details.achievements.vecHighlight.push(value)
@@ -145,7 +145,7 @@ export const patchAppPageExperimental = (serverAPI: ServerAPI, achievementManage
 
 						} else
 						{
-							console.log("no achievements")
+							//console.log("no achievements")
 							return skip;
 						}
 
@@ -156,13 +156,13 @@ export const patchAppPageExperimental = (serverAPI: ServerAPI, achievementManage
 				.afterPatchWrapping(
 						ret =>
 						{
-							console.log("children", ret)
+							//console.log("children", ret)
 							return ret?.props?.children;
 						},
 						"type",
 						WrapType.TYPE,
 						(_, ret, vars) => {
-							console.log("level1", ret)
+							//console.log("level1", ret)
 							return {
 								ret,
 								vars
@@ -174,7 +174,7 @@ export const patchAppPageExperimental = (serverAPI: ServerAPI, achievementManage
 							"render",
 							WrapType.CLASS,
 							(_, ret, vars) => {
-								console.log("level2", ret)
+								//console.log("level2", ret)
 								return {
 									ret,
 									vars
@@ -185,7 +185,7 @@ export const patchAppPageExperimental = (serverAPI: ServerAPI, achievementManage
 								ret => findInReactTree(ret, x => x?.props?.setSections),
 								"type",
 								(_, ret, vars) => {
-									console.log("level3", ret)
+									//console.log("level3", ret)
 									return {
 										ret,
 										vars
@@ -196,7 +196,7 @@ export const patchAppPageExperimental = (serverAPI: ServerAPI, achievementManage
 									ret => ret,
 									"type",
 									(_, ret, vars) => {
-										console.log("level4", ret)
+										//console.log("level4", ret)
 										return {
 											ret,
 											vars
@@ -209,7 +209,7 @@ export const patchAppPageExperimental = (serverAPI: ServerAPI, achievementManage
 										"type",
 										WrapType.TYPE,
 										(_, ret, vars) => {
-											console.log("level5", ret)
+											//console.log("level5", ret)
 											return {
 												ret,
 												vars
@@ -222,7 +222,7 @@ export const patchAppPageExperimental = (serverAPI: ServerAPI, achievementManage
 											"type",
 											WrapType.TYPE,
 											(_, ret, vars) => {
-												console.log("level6", ret)
+												//console.log("level6", ret)
 												return {
 													ret,
 													vars
@@ -235,7 +235,7 @@ export const patchAppPageExperimental = (serverAPI: ServerAPI, achievementManage
 												"type",
 												WrapType.TYPE,
 												(_, ret, vars) => {
-													console.log("level7", ret)
+													//console.log("level7", ret)
 													return {
 														ret,
 														vars
@@ -247,7 +247,7 @@ export const patchAppPageExperimental = (serverAPI: ServerAPI, achievementManage
 													"render",
 													WrapType.CLASS,
 													(_, ret, vars) => {
-														console.log("level8", ret)
+														//console.log("level8", ret)
 														return {
 															ret,
 															vars
@@ -260,7 +260,7 @@ export const patchAppPageExperimental = (serverAPI: ServerAPI, achievementManage
 														WrapType.CLASS,
 														(_, ret, vars) =>
 														{
-															console.log("level9", ret)
+															//console.log("level9", ret)
 															let element = findInReactTree(ret, x => x?.type?.name === "re");
 															if (achievementManager.isReady(vars.appId))
 															{

@@ -1,12 +1,7 @@
-import hashlib
 import logging
 import os
-import subprocess
-import sys
-from pathlib import Path
-from typing import List, Dict
+from typing import List
 
-sys.path.append(os.path.dirname(__file__))
 from retroachievements import RetroAchievements, Game
 from settings import SettingsManager
 
@@ -37,7 +32,7 @@ class Plugin:
 		await Plugin.commit(self)
 
 	async def isLogin(self) -> bool:
-		return (Plugin.username is not None) and (Plugin.api_key is not None)
+		return (Plugin.username != "") and (Plugin.api_key != "")
 
 	async def Hidden(self, hidden: bool):
 		Plugin.hidden = hidden
@@ -61,8 +56,8 @@ class Plugin:
 
 	async def read(self):
 		Plugin.settings.read()
-		Plugin.username = await Plugin.getSetting(self, "username", None)
-		Plugin.api_key = await Plugin.getSetting(self, "api_key", None)
+		Plugin.username = await Plugin.getSetting(self, "username", "")
+		Plugin.api_key = await Plugin.getSetting(self, "api_key", "")
 		Plugin.hidden = await Plugin.getSetting(self, "hidden", False)
 		await Plugin.commit(self)
 
