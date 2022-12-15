@@ -54,6 +54,9 @@ class Plugin:
 		logger.info(f"{Plugin.username} -> {Plugin.api_key}")
 		Plugin.client = RetroAchievements(Plugin.username, Plugin.api_key)
 
+	async def _unload(self):
+		await Plugin.commit(self)
+
 	async def read(self):
 		Plugin.settings.read()
 		Plugin.username = await Plugin.getSetting(self, "username", "")
