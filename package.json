@@ -45,7 +45,7 @@
 		"deckbuild": "^1.0.9"
 	},
 	"dependencies": {
-		"decky-frontend-lib": "^3.13.1",
+		"decky-frontend-lib": "^3.18.3",
 		"localforage": "^1.10.0",
 		"lodash-es": "^4.17.21",
 		"mobx": "5",

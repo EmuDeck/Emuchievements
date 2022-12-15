@@ -19,7 +19,9 @@ declare global
 {
 	// @ts-ignore
 	let SteamClient: SteamClient;
+	// @ts-ignore
 	let appStore: AppStore;
+	// @ts-ignore
 	let appDetailsStore: AppDetailsStore;
 }
 
