@@ -691,8 +691,8 @@ class Plugin:
 	client: RetroAchievements
 	hidden: bool = False
 
-	async def Hash(self, path: str) -> str:
-		return os.popen(f"{os.path.dirname(__file__) + '/bin/Emuchievements'} \"{path}\"").read().strip()
+	async def Hash(self, path: str, plugin: str = "Emuchievements") -> str:
+		return os.popen(f"{helpers.get_homebrew_path(helpers.get_home_path(helpers.get_user()))}'/plugins/{plugin}/bin/Emuchievements' \"{path}\"").read().strip()
 
 	async def Login(self, username: str, api_key: str):
 		Plugin.username = username
