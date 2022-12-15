@@ -7,19 +7,17 @@ import {
 	staticClasses
 } from "decky-frontend-lib";
 import {FaClipboardCheck} from "react-icons/fa";
-import {GameComponent} from "./components/gameComponent";
 import {EmuchievementsComponent} from "./components/emuchievementsComponent";
 import {LoginComponent} from "./components/loginComponent";
-import {DescriptionComponent} from "./components/descriptionComponent";
 import {AppDetailsStore, AppStore} from "./AppStore";
-import {SteamClient} from "./SteamClient";
+import {SteamClient, SteamShortcut} from "./SteamClient";
 import {patchAppPage} from "./AppPatch";
 import {AchievementManager} from "./AchievementsManager";
-import Logger from "./logger";
 import {hideApp, showApp} from "./steam-utils";
 
 declare global
 {
+	// @ts-ignore
 	let SteamClient: SteamClient;
 	let appStore: AppStore;
 	let appDetailsStore: AppDetailsStore;
@@ -27,11 +25,7 @@ declare global
 
 export default definePlugin((serverAPI: ServerAPI) =>
 {
-	serverAPI.routerHook.addRoute("/emuchievements/game", () => <GameComponent serverAPI={serverAPI}/>);
-	serverAPI.routerHook.addRoute("/emuchievements/achievement", () => <DescriptionComponent serverAPI={serverAPI}/>);
 	serverAPI.routerHook.addRoute("/emuchievements/login", () => <LoginComponent serverAPI={serverAPI}/>);
-	const logger = new Logger("Init");
-
 	const achievementManager = new AchievementManager(serverAPI);
 	let d = (findModuleChild(module =>
 	{
@@ -46,11 +40,11 @@ export default definePlugin((serverAPI: ServerAPI) =>
 			"GetMyAchievements",
 			args =>
 			{
-				console.log(args, appStore.GetAppOverviewByAppID(args[0]), appDetailsStore.GetAppDetails(args[0]));
+				//console.log(args, appStore.GetAppOverviewByAppID(args[0]), appDetailsStore.GetAppDetails(args[0]));
 				if (appStore.GetAppOverviewByAppID(args[0]).app_type==1073741824)
 				{
-					let data = achievementManager.fetchAchievements(serverAPI, args[0]);
-					console.log(data.all);
+					let data = achievementManager.fetchAchievements(args[0]);
+					//console.log(data.all);
 					return data.all;
 				}
 				return callOriginal;
@@ -61,11 +55,11 @@ export default definePlugin((serverAPI: ServerAPI) =>
 			"GetGlobalAchievements",
 			args =>
 			{
-				console.log(args, appStore.GetAppOverviewByAppID(args[0]), appDetailsStore.GetAppDetails(args[0]));
+				//console.log(args, appStore.GetAppOverviewByAppID(args[0]), appDetailsStore.GetAppDetails(args[0]));
 				if (appStore.GetAppOverviewByAppID(args[0]).app_type==1073741824)
 				{
-					let data = achievementManager.fetchAchievements(serverAPI, args[0]);
-					console.log(data.global);
+					let data = achievementManager.fetchAchievements(args[0]);
+					//console.log(data.global);
 					return data.global;
 
 				}
@@ -75,9 +69,9 @@ export default definePlugin((serverAPI: ServerAPI) =>
 
 	let appPatch = patchAppPage(serverAPI, achievementManager);
 
-	achievementManager.init().catch(reason => logger.error(reason)).then(() =>
+	achievementManager.init().then(() =>
 	{
-		SteamClient.Apps.GetAllShortcuts().then(async (shortcuts) =>
+		SteamClient.Apps.GetAllShortcuts().then(async (shortcuts: SteamShortcut[]) =>
 		{
 			serverAPI.callPluginMethod<{}, boolean>("isHidden", {}).then(hidden =>
 			{
@@ -109,15 +103,13 @@ export default definePlugin((serverAPI: ServerAPI) =>
 		});
 	});
 
-	console.log(d);
+	//console.log(d);
 	return {
 		title: <div className={staticClasses.Title}>Emuchievements</div>,
 		content: <EmuchievementsComponent achievementManager={achievementManager} serverAPI={serverAPI}/>,
 		icon: <FaClipboardCheck/>,
 		onDismount()
 		{
-			serverAPI.routerHook.removeRoute("/emuchievements/game");
-			serverAPI.routerHook.removeRoute("/emuchievements/achievement");
 			serverAPI.routerHook.removeRoute("/emuchievements/login");
 			serverAPI.routerHook.removePatch("/library/app/:appid", appPatch)
 			myPatch.unpatch();

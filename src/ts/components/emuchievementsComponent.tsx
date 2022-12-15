@@ -2,6 +2,7 @@ import {Component} from "react";
 import {EmuchievementsProps, EmuchievementsState} from "../interfaces";
 import {ButtonItem, Field, PanelSection, PanelSectionRow, Router, SteamSpinner, ToggleField} from "decky-frontend-lib";
 import {hideApp, showApp} from "../steam-utils";
+import {SteamShortcut} from "../SteamClient";
 // import {doesGameHaveRetroAchievements} from "../state";
 
 export class EmuchievementsComponent extends Component<EmuchievementsProps, EmuchievementsState> {
@@ -21,7 +22,7 @@ export class EmuchievementsComponent extends Component<EmuchievementsProps, Emuc
 		        this.setState({
 			        login: logged_in.result
 		        });
-		        SteamClient.Apps.GetAllShortcuts().then(async (shortcuts) =>
+		        SteamClient.Apps.GetAllShortcuts().then(async (shortcuts: SteamShortcut[]) =>
 		        {
 			        let app_ids: number[] = [];
 			        for (const app_id of shortcuts.map(shortcut => shortcut.appid))

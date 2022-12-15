@@ -15,23 +15,6 @@ export interface EmuchievementsProps extends APIProps
 	achievementManager: AchievementManager
 }
 
-export interface HomeProps extends APIProps
-{
-}
-
-export interface GameProps extends APIProps
-{
-}
-
-export interface AchievementProps
-{
-    achievement: Achievement
-}
-
-export interface DescriptionProps extends APIProps
-{
-}
-
 export interface Achievement {
     raw: any,
     id?: number,
@@ -94,13 +77,6 @@ export interface Login {
     username: string,
     api_key: string
 }
-
-
-export interface GameInfo {
-	id: number,
-	hash: string
-}
-
 export interface GetUserRecentlyPlayedGamesParams {
     count: number
 }
@@ -108,16 +84,6 @@ export interface GetUserRecentlyPlayedGamesParams {
 export interface GetGameInfoAndUserProgressParams {
     game_id: number
 }
-
-export interface GetGameCacheParams {
-	app_id: number
-}
-
-export interface PutGameCacheParams {
-	app_id: number,
-	game_id: number
-}
-
 export interface APIState {
     games: Game[],
     achievements: { [key: number]: Game },

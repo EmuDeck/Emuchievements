@@ -28,7 +28,15 @@ export class LoginComponent extends Component<LoginProps, Login> {
                                 username: this.state.username,
                                 api_key: this.state.api_key
                             })
-                            Router.NavigateBackOrOpenMenu()
+	                        Router?.NavigateBackOrOpenMenu && Router.NavigateBackOrOpenMenu()
+	                        // @ts-ignore
+	                        Router?.WindowStore?.m_MainWindowInstance?.NavigateBack &&
+	                        // @ts-ignore
+	                        Router.WindowStore.m_MainWindowInstance.NavigateBack();
+	                        // @ts-ignore
+	                        Router?.WindowStore?.m_GamepadUIMainWindowInstance?.NavigateBack &&
+	                        // @ts-ignore
+	                        Router.WindowStore.m_GamepadUIMainWindowInstance.NavigateBack();
                         })();
                     }}>
                     </ButtonItem>
