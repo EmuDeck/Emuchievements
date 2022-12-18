@@ -8,16 +8,18 @@ import importAssets from 'rollup-plugin-import-assets';
 
 import {name} from "./plugin.json";
 
+const production = process.env.NODE_ENV !== 'development'
+
 export default defineConfig({
 	input: './src/ts/index.tsx',
 	plugins: [
 		commonjs(),
-		nodeResolve(),
-		typescript(),
+		nodeResolve({browser: true}),
+		typescript({ sourceMap: !production, inlineSources: !production }),
 		json(),
 		replace({
 			preventAssignment: false,
-			'process.env.NODE_ENV': JSON.stringify('production')
+			'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
 		}),
 		importAssets({
 			publicPath: `http://127.0.0.1:1337/plugins/${name}/`
@@ -27,6 +29,8 @@ export default defineConfig({
 	external: ['react', 'react-dom'],
 	output: {
 		file: 'dist/index.js',
+		sourcemap: !production ? 'inline' : false,
+		footer: () => !production ? `\n//# sourceURL=http://localhost:1337/plugins/${name}/frontend_bundle` : "",
 		globals: {
 			react: 'SP_REACT',
 			'react-dom': 'SP_REACTDOM',

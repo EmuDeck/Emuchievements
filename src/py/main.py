@@ -728,10 +728,9 @@ class Plugin:
 
 	async def read(self):
 		Plugin.settings.read()
-		Plugin.username = await Plugin.getSetting(self, "username", "")
-		Plugin.api_key = await Plugin.getSetting(self, "api_key", "")
+		Plugin.username = await Plugin.waitForSetting(self, "username")
+		Plugin.api_key = await Plugin.waitForSetting(self, "api_key")
 		Plugin.hidden = await Plugin.getSetting(self, "hidden", False)
-		await Plugin.commit(self)
 
 	async def commit(self):
 		await Plugin.setSetting(self, "username", Plugin.username)
@@ -741,6 +740,12 @@ class Plugin:
 
 	async def getSetting(self, key, default):
 		return Plugin.settings.getSetting(key, default)
+
+	async def waitForSetting(self, key):
+		setting = await Plugin.getSetting(self, key, "")
+		while setting == "":
+			setting = await Plugin.getSetting(self, key, "")
+		return setting
 
 	async def setSetting(self, key, value):
 		Plugin.settings.setSetting(key, value)
