@@ -6,8 +6,9 @@ export interface APIProps
     serverAPI: ServerAPI
 }
 
-export interface LoginProps extends APIProps
+export interface SettingsProps extends APIProps
 {
+	achievementManager: AchievementManager
 }
 
 export interface EmuchievementsProps extends APIProps
@@ -90,14 +91,8 @@ export interface APIState {
     loading: boolean
 }
 
-export interface EmuchievementsState {
-	login: boolean,
-	app_ids: number[],
-	loaded: boolean,
-	hide: boolean
-}
-
-export interface GlobalState {
-    current_game: number,
-    current_achievement: number
+export interface AchievementsData {
+	game: Game,
+	last_updated_at: Date,
+	game_id?: number
 }

@@ -345,6 +345,7 @@ export interface AppDetails
 
 export interface AppOverview
 {
+	__proto__: any;
 	"appid": number,
 	"display_name": string,
 	"app_type": number,

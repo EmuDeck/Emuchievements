@@ -1,8 +1,7 @@
 import logging
 import os
-
+import ctypes
 from settings import SettingsManager
-
 import logging
 
 import aiohttp as aiohttp
@@ -10,7 +9,6 @@ import aiohttp as aiohttp
 from datetime import datetime
 from typing import Union, List
 import helpers
-
 base_url = "https://retroachievements.org"
 
 logging.basicConfig(
@@ -692,7 +690,13 @@ class Plugin:
 	hidden: bool = False
 
 	async def Hash(self, path: str, plugin: str = "Emuchievements") -> str:
-		return os.popen(f"{helpers.get_homebrew_path(helpers.get_home_path(helpers.get_user()))}'/plugins/{plugin}/bin/Emuchievements' \"{path}\"").read().strip()
+		# lib = ctypes.CDLL(f"{helpers.get_homebrew_path(helpers.get_home_path(helpers.get_user()))}/plugins/{plugin}/bin/Emuchievements.so")
+		# hash = lib.hash
+		# hash.argtypes = [ctypes.c_char_p]
+		# hash.restype = ctypes.c_char_p
+		# return hash(path.encode('utf-8'))
+
+		return os.popen(f"'{helpers.get_homebrew_path(helpers.get_home_path(helpers.get_user()))}/plugins/{plugin}/bin/Emuchievements' \"{path}\"").read().strip()
 
 	async def Login(self, username: str, api_key: str):
 		Plugin.username = username
@@ -739,13 +743,17 @@ class Plugin:
 		Plugin.settings.commit()
 
 	async def getSetting(self, key, default):
+		Plugin.settings.read()
 		return Plugin.settings.getSetting(key, default)
 
 	async def waitForSetting(self, key):
 		setting = await Plugin.getSetting(self, key, "")
-		while setting == "":
+		retries = 50
+		while setting == "" and retries >= 0:
 			setting = await Plugin.getSetting(self, key, "")
+			retries -= 1
 		return setting
 
 	async def setSetting(self, key, value):
 		Plugin.settings.setSetting(key, value)
+		await Plugin.read(self)

@@ -7,6 +7,7 @@ import {defineConfig} from 'rollup';
 import importAssets from 'rollup-plugin-import-assets';
 
 import {name} from "./plugin.json";
+import {createPathTransform} from "rollup-sourcemap-path-transform";
 
 const production = process.env.NODE_ENV !== 'development'
 
@@ -30,6 +31,13 @@ export default defineConfig({
 	output: {
 		file: 'dist/index.js',
 		sourcemap: !production ? 'inline' : false,
+		sourcemapPathTransform: !production ? createPathTransform({
+			prefixes: {
+				"../src/src/ts/": `/plugins/${name}/src/`,
+				"../node_modules/.pnpm/": `/plugins/${name}/node_modules/`
+			},
+			requirePrefix: true
+		}) : undefined,
 		footer: () => !production ? `\n//# sourceURL=http://localhost:1337/plugins/${name}/frontend_bundle` : "",
 		globals: {
 			react: 'SP_REACT',

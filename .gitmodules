@@ -1,3 +1,9 @@
 [submodule "backend/src/rcheevos"]
 	path = backend/src/rcheevos
 	url = https://github.com/RetroAchievements/rcheevos.git
+[submodule "backend/src/libchdr"]
+	path = backend/src/libchdr
+	url = https://github.com/rtissera/libchdr.git
+[submodule "backend/src/miniz"]
+	path = backend/src/miniz
+	url = https://github.com/richgel999/miniz.git

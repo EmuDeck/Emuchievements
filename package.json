@@ -29,6 +29,7 @@
 	},
 	"homepage": "https://github.com/EmuDeck/Emuchievements#readme",
 	"devDependencies": {
+		"rollup-sourcemap-path-transform": "^1.0.3",
 		"@rollup/plugin-commonjs": "^21.1.0",
 		"@rollup/plugin-json": "^4.1.0",
 		"@rollup/plugin-node-resolve": "^13.3.0",
@@ -50,7 +51,8 @@
 		"localforage": "^1.10.0",
 		"lodash-es": "^4.17.21",
 		"mobx": "5",
-		"react-icons": "^4.4.0"
+		"react-icons": "^4.4.0",
+		"async-wait-until": "^2.0.12"
 	},
 	"pnpm": {
 		"peerDependencyRules": {

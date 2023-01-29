@@ -51,3 +51,4 @@ backend/out
 build
 
 deck.json
+/cmake-build-debug/

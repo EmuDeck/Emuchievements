@@ -1,116 +1,63 @@
-import {Component} from "react";
-import {EmuchievementsProps, EmuchievementsState} from "../interfaces";
-import {ButtonItem, Field, PanelSection, PanelSectionRow, Router, SteamSpinner, ToggleField} from "decky-frontend-lib";
-import {hideApp, showApp} from "../steam-utils";
+import {Fragment, useEffect, VFC} from "react";
+import {EmuchievementsProps} from "../interfaces";
+import {
+	Field, Navigation, PanelSection,
+	PanelSectionRow, ProgressBarItem
+} from "decky-frontend-lib";
 import {SteamShortcut} from "../SteamClient";
-// import {doesGameHaveRetroAchievements} from "../state";
+import {wrapPromise} from "./WithSuspense";
+import waitUntil, {WAIT_FOREVER} from "async-wait-until";
+import {useEmuchievementsState} from "../hooks/achievementsContext";
 
-export class EmuchievementsComponent extends Component<EmuchievementsProps, EmuchievementsState> {
-    state: Readonly<EmuchievementsState> = {
-        login: false,
-	    loaded: false,
-	    hide: false,
-	    app_ids: []
-    };
+let appIds: { read: () => number[] };
 
-    componentDidMount() {
-        let {serverAPI, achievementManager} = this.props;
-        serverAPI.callPluginMethod<{}, boolean>("isLogin", {}).then(logged_in =>
-        {
-	        if (logged_in.success)
-	        {
-		        this.setState({
-			        login: logged_in.result
-		        });
-		        SteamClient.Apps.GetAllShortcuts().then(async (shortcuts: SteamShortcut[]) =>
-		        {
-			        let app_ids: number[] = [];
-			        for (const app_id of shortcuts.map(shortcut => shortcut.appid))
-			        {
-				        if (achievementManager.isReady(app_id))
-				        {
-							console.log("true", app_id)
-					        app_ids.push(app_id)
-				        }
-						else console.log("false", app_id)
-			        }
-			        console.log(app_ids)
-			        this.setState({app_ids: app_ids, loaded: true});
-		        });
+export const EmuchievementsComponent: VFC<EmuchievementsProps> = ({achievementManager}) => {
+	const {loadingData} = useEmuchievementsState();
 
-	        }
-        })
-	    serverAPI.callPluginMethod<{}, boolean>("isHidden", {}).then(hidden => {
-			if (hidden.success)
-				this.setState({hide: hidden.result});
-	    });
-    }
+	useEffect(() => {
+		appIds = wrapPromise<number[]>(
+			   SteamClient.Apps.GetAllShortcuts().then(async (shortcuts: SteamShortcut[]) => {
+				   let app_ids: number[] = [];
+				   await waitUntil(() => !loadingData.globalLoading, {timeout: WAIT_FOREVER});
+				   for (const app_id of shortcuts.map(shortcut => shortcut.appid))
+				   {
+					   if (achievementManager.isReady(app_id))
+					   {
+						   app_ids.push(app_id)
+					   }
+				   }
+				   console.log(app_ids)
+				   return app_ids
+			   }))
+	});
+	const app_ids = appIds?.read();
 
+		return (
+			   <PanelSection>
+				   {
+					   app_ids?.map(app_id => {
+								 const achievements = achievementManager.fetchAchievements(app_id).all.data;
+								 if (!!achievements)
+								 {
+									 const achieved = Object.keys(achievements.achieved).length;
+									 const total = Object.keys(achievements.achieved).length + Object.keys(achievements.unachieved).length;
+									 return <PanelSectionRow key={app_id}>
+										 <Field
+											    label={appStore.GetAppOverviewByAppID(app_id).display_name}
+											    onActivate={() => {
+												    Navigation.Navigate(`/library/app/${app_id}/achievements/my/individual`);
+												    Navigation.CloseSideMenus();
+											    }}>
+											 <ProgressBarItem nProgress={(achieved / total) * 100} layout={"inline"}
+														   description={`${achieved}/${total}`}
+														   bottomSeparator={"none"}/>
+										 </Field>
+									 </PanelSectionRow>;
+								 } else return <Fragment/>;
 
-
-    render() {
-
-        if (this.state.login) {
-			if (this.state.loaded)
-			{
-				return (
-						<PanelSection>
-							<PanelSectionRow>
-								<Field label={"Hide Shortcuts"}>
-									<ToggleField checked={this.state.hide} onChange={checked =>
-									{
-										this.setState({hide: checked})
-										this.props.serverAPI.callPluginMethod<{hidden: boolean}, {}>("Hidden", {hidden: checked}).then(() => {});
-										if (checked)
-										{
-											this.state.app_ids.forEach(app_id => {
-												hideApp(app_id);
-											})
-										}
-										else
-										{
-											this.state.app_ids.forEach(app_id => {
-												showApp(app_id);
-											})
-										}
-									}}/>
-								</Field>
-							</PanelSectionRow>
-							{
-								this.state.app_ids.map(app_id =>
-										<PanelSectionRow key={app_id}>
-											<ButtonItem onClick={() =>
-											{
-												Router.Navigate(`/library/app/${app_id}/achievements/my/individual`)
-											}} layout={"below"}>
-												<div style={{
-													display: 'flex',
-													alignItems: 'center',
-													justifyContent: 'space-between'
-												}}>
-													{appStore.GetAppOverviewByAppID(app_id).display_name}
-												</div>
-											</ButtonItem>
-										</PanelSectionRow>
-								)
-							}
-						</PanelSection>
-				);
-			}
-			else return <SteamSpinner/>
-        } else {
-            return (
-                <PanelSection>
-                    <PanelSectionRow>
-                        <ButtonItem onClick={() => {
-                            Router.CloseSideMenus()
-                            Router.Navigate("/emuchievements/login")
-                        }}>
-                            Login
-                        </ButtonItem>
-                    </PanelSectionRow>
-                </PanelSection>
-            );
-        }
-    }
+							 }
+					   )
+				   }
+			   </PanelSection>
+		);
 }
