@@ -34,38 +34,38 @@ OBJS = \
 	$(RC_HASH_SRC)/cdreader.o \
 	$(RC_HASH_SRC)/hash.o \
 	$(RC_HASH_SRC)/md5.o \
-    $(LZMA_SRC)/Alloc.o \
-    $(LZMA_SRC)/Bra86.o \
-    $(LZMA_SRC)/BraIA64.o \
-    $(LZMA_SRC)/CpuArch.o \
-    $(LZMA_SRC)/Delta.o \
-    $(LZMA_SRC)/LzFind.o \
-    $(LZMA_SRC)/Lzma86Dec.o \
-    $(LZMA_SRC)/Lzma86Enc.o \
-    $(LZMA_SRC)/LzmaDec.o \
-    $(LZMA_SRC)/LzmaEnc.o \
-    $(LZMA_SRC)/Sort.o \
+	$(LZMA_SRC)/Alloc.o \
+	$(LZMA_SRC)/Bra86.o \
+	$(LZMA_SRC)/BraIA64.o \
+	$(LZMA_SRC)/CpuArch.o \
+	$(LZMA_SRC)/Delta.o \
+	$(LZMA_SRC)/LzFind.o \
+	$(LZMA_SRC)/Lzma86Dec.o \
+	$(LZMA_SRC)/Lzma86Enc.o \
+	$(LZMA_SRC)/LzmaDec.o \
+	$(LZMA_SRC)/LzmaEnc.o \
+	$(LZMA_SRC)/Sort.o \
 	$(ZLIB_SRC)/adler32.o \
-    $(ZLIB_SRC)/compress.o \
-    $(ZLIB_SRC)/crc32.o \
-    $(ZLIB_SRC)/deflate.o \
-    $(ZLIB_SRC)/gzclose.o \
-    $(ZLIB_SRC)/gzlib.o \
-    $(ZLIB_SRC)/gzread.o \
-    $(ZLIB_SRC)/gzwrite.o \
-    $(ZLIB_SRC)/infback.o \
-    $(ZLIB_SRC)/inffast.o \
-    $(ZLIB_SRC)/inflate.o \
-    $(ZLIB_SRC)/inftrees.o \
-    $(ZLIB_SRC)/trees.o \
-    $(ZLIB_SRC)/uncompr.o \
-    $(ZLIB_SRC)/zutil.o \
+	$(ZLIB_SRC)/compress.o \
+	$(ZLIB_SRC)/crc32.o \
+	$(ZLIB_SRC)/deflate.o \
+	$(ZLIB_SRC)/gzclose.o \
+	$(ZLIB_SRC)/gzlib.o \
+	$(ZLIB_SRC)/gzread.o \
+	$(ZLIB_SRC)/gzwrite.o \
+	$(ZLIB_SRC)/infback.o \
+	$(ZLIB_SRC)/inffast.o \
+	$(ZLIB_SRC)/inflate.o \
+	$(ZLIB_SRC)/inftrees.o \
+	$(ZLIB_SRC)/trees.o \
+	$(ZLIB_SRC)/uncompr.o \
+	$(ZLIB_SRC)/zutil.o \
 	$(CHD_SRC)/libchdr_bitstream.o \
-    $(CHD_SRC)/libchdr_cdrom.o \
-    $(CHD_SRC)/libchdr_chd.o \
-    $(CHD_SRC)/libchdr_flac.o \
-    $(CHD_SRC)/libchdr_huffman.o \
-    $(MINIZ_SRC)/miniz.o \
+	$(CHD_SRC)/libchdr_cdrom.o \
+	$(CHD_SRC)/libchdr_chd.o \
+	$(CHD_SRC)/libchdr_flac.o \
+	$(CHD_SRC)/libchdr_huffman.o \
+	$(MINIZ_SRC)/miniz.o \
 	$(MINIZ_SRC)/miniz_tdef.o \
 	$(MINIZ_SRC)/miniz_tinfl.o \
 	$(MINIZ_SRC)/miniz_zip.o \
@@ -81,16 +81,12 @@ OBJS = \
 
 all: build
 
-build: $(OUTPUTDIR)/Emuchievements $(OUTPUTDIR)/Emuchievements.so
+build: $(OUTPUTDIR)/Emuchievements
 
 $(OUTPUTDIR)/Emuchievements: $(OBJS)
 	$(MKDIR)
 	$(CXX) -o $@ $+ $(LDFLAGS)
 	chmod +x $(OUTPUTDIR)/Emuchievements
-
-$(OUTPUTDIR)/Emuchievements.so: $(OBJS)
-	$(MKDIR)
-	$(CXX) -shared -o $@ $+ $(LDFLAGS)
 
 .PHONY: clean
 clean:
