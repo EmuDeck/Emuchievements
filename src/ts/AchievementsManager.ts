@@ -346,10 +346,9 @@ export class AchievementManager
 
 	async init(): Promise<void>
 	{
-		await this.refresh_achievements()
 		this.refreshTimer = setInterval(async () => {
 			await this.refresh_achievements()
-		}, 5 * 60 * 1000)
+		}, 60 * 1000)
 	}
 
 	deinit(): void

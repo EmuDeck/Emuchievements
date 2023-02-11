@@ -1,4 +1,8 @@
-import {useEffect, VFC} from "react";
+import React, {
+	useEffect,
+	useState,
+	VFC
+} from "react";
 import {Login, SettingsProps} from "../interfaces";
 import {
 	ButtonItem,
@@ -8,44 +12,47 @@ import {
 	PanelSection, PanelSectionRow,
 	SidebarNavigation,
 	TextField,
-	ToggleField
+	ToggleField,
+	SteamSpinner
 } from "decky-frontend-lib";
 import {useSetting} from "../hooks/useSetting";
 import {hideApp, showApp} from "../steam-utils";
-import {wrapPromise} from "./WithSuspense";
 import {SteamShortcut} from "../SteamClient";
-import waitUntil, {WAIT_FOREVER} from "async-wait-until";
 import {useEmuchievementsState} from "../hooks/achievementsContext";
-
-let appIds: { read: () => number[] };
 
 const GeneralSettings: VFC<SettingsProps> = ({serverAPI, achievementManager}) => {
 	const {loadingData} = useEmuchievementsState();
 	const [username, setUsername] = useSetting<string>("username", "");
 	const [apiKey, setApiKey] = useSetting<string>("api_key", "");
 	const [hidden, setHidden] = useSetting<boolean>("hidden", false);
+	const [appIds, setAppIds] = useState<number[]>([])
+	const [loading, setLoading] = useState<boolean>(true)
 	useEffect(() => {
-		appIds = wrapPromise<number[]>(
 			   SteamClient.Apps.GetAllShortcuts().then(async (shortcuts: SteamShortcut[]) => {
 				   let app_ids: number[] = [];
-				   await waitUntil(() => !loadingData.globalLoading, {timeout: WAIT_FOREVER});
-				   for (const app_id of shortcuts.map(shortcut => shortcut.appid))
+				   if (!loadingData.globalLoading)
 				   {
-					   if (achievementManager.isReady(app_id))
+					   for (const app_id of shortcuts.map(shortcut => shortcut.appid))
 					   {
-						   app_ids.push(app_id)
+						   if (achievementManager.isReady(app_id))
+						   {
+							   app_ids.push(app_id)
+						   }
 					   }
+					   setAppIds(app_ids)
 				   }
-				   console.log(app_ids)
-				   return app_ids
-			   }))
-	});
-	const app_ids = appIds?.read();
+				   setLoading(loadingData.globalLoading)
+			   })
+	}, [loadingData]);
 	return (
-		   <Focusable style={{
+		   <div style={{
 			   marginTop: '40px',
 			   height: 'calc( 100% - 40px )',
 		   }}>
+			   {loading ? <PanelSectionRow>
+						 <SteamSpinner/>
+					 </PanelSectionRow> :
+					 <>
 			   <PanelSection title="Apps">
 				   <PanelSectionRow>
 					   <Field label={"Hide Shortcuts"}>
@@ -54,13 +61,13 @@ const GeneralSettings: VFC<SettingsProps> = ({serverAPI, achievementManager}) =>
 							   await serverAPI.callPluginMethod<{ hidden: boolean }, {}>("Hidden", {hidden: checked})
 							   if (checked)
 							   {
-								   app_ids?.forEach(app_id => {
-									   hideApp(app_id);
+								   appIds?.forEach(appId => {
+									   hideApp(appId);
 								   });
 							   } else
 							   {
-								   app_ids?.forEach(app_id => {
-									   showApp(app_id);
+								   appIds?.forEach(appId => {
+									   showApp(appId);
 								   });
 							   }
 						   }}/>
@@ -87,7 +94,9 @@ const GeneralSettings: VFC<SettingsProps> = ({serverAPI, achievementManager}) =>
 					   Login
 				   </ButtonItem>
 			   </PanelSection>
-		   </Focusable>
+						 </>
+			   }
+		   </div>
 	)
 }
 

@@ -15,7 +15,6 @@ import {AchievementManager} from "./AchievementsManager";
 import {hideApp, showApp} from "./steam-utils";
 import {runInAction} from "mobx";
 import {setServerAPI} from "./settings";
-import {WithSuspenseAchievements} from "./components/WithSuspense";
 import {EmuchievementsComponent} from "./components/emuchievementsComponent";
 import {EmuchievementsState, EmuchievementsStateContextProvider} from "./hooks/achievementsContext";
 
@@ -132,6 +131,7 @@ export default definePlugin((serverAPI: ServerAPI) => {
 	achievementManager.init().then(() => {
 		SteamClient.Apps.GetAllShortcuts().then(async (shortcuts: SteamShortcut[]) => {
 			serverAPI.callPluginMethod<{}, boolean>("isHidden", {}).then(hidden => {
+				console.log("hidden: ", hidden)
 				let app_ids: number[] = [];
 				for (const app_id of shortcuts.map(shortcut => shortcut.appid))
 				{
@@ -172,9 +172,7 @@ export default definePlugin((serverAPI: ServerAPI) => {
 						   Settings
 					   </ButtonItem>
 				   </PanelSectionRow>
-				   <WithSuspenseAchievements>
-					   <EmuchievementsComponent achievementManager={achievementManager} serverAPI={serverAPI}/>
-				   </WithSuspenseAchievements>
+				   <EmuchievementsComponent achievementManager={achievementManager} serverAPI={serverAPI}/>
 			   </EmuchievementsStateContextProvider>,
 		icon: <FaClipboardCheck/>,
 		onDismount()
@@ -183,6 +181,7 @@ export default definePlugin((serverAPI: ServerAPI) => {
 			myPatch?.unpatch();
 			globalPatch?.unpatch();
 			sectionPatch?.unpatch();
+			achievementManager.deinit();
 		},
 	};
 });
