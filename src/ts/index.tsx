@@ -1,22 +1,18 @@
 import {
-	afterPatch, ButtonItem,
-	callOriginal,
+	afterPatch, callOriginal,
 	definePlugin,
-	findModuleChild, Navigation, PanelSectionRow, Patch,
+	findModuleChild, Patch,
 	replacePatch,
 	ServerAPI,
 	staticClasses
 } from "decky-frontend-lib";
 import {FaClipboardCheck} from "react-icons/fa";
 import {SettingsComponent} from "./components/settingsComponent";
-import {AppDetailsStore, AppStore} from "./AppStore";
-import {AppDetails, AppOverview, SteamClient, SteamShortcut} from "./SteamClient";
-import {AchievementManager} from "./AchievementsManager";
-import {hideApp, showApp} from "./steam-utils";
-import {runInAction} from "mobx";
-import {setServerAPI} from "./settings";
 import {EmuchievementsComponent} from "./components/emuchievementsComponent";
 import {EmuchievementsState, EmuchievementsStateContextProvider} from "./hooks/achievementsContext";
+import {registerForLoginStateChange, waitForServicesInitialized} from "./LibraryInitializer";
+import Logger from "./logger";
+import {CollectionStore, AppDetailsStore, SteamAppOverview, SteamAppDetails} from "./SteamTypes";
 
 declare global
 {
@@ -26,6 +22,8 @@ declare global
 	let appStore: AppStore;
 	// @ts-ignore
 	let appDetailsStore: AppDetailsStore;
+
+	let collectionStore: CollectionStore;
 }
 
 const AppDetailsSections = findModuleChild((m) => {
@@ -49,114 +47,92 @@ const Achievements = (findModuleChild(module => {
 }));
 
 export default definePlugin((serverAPI: ServerAPI) => {
-	setServerAPI(serverAPI);
-	const state = new EmuchievementsState();
-	const achievementManager = new AchievementManager(serverAPI, state);
+	const logger = new Logger("Index");
+	const state = new EmuchievementsState(serverAPI);
 	serverAPI.routerHook.addRoute("/emuchievements/settings", () =>
 		   <EmuchievementsStateContextProvider emuchievementsState={state}>
-			   <SettingsComponent serverAPI={serverAPI} achievementManager={achievementManager}/>
+			   <SettingsComponent/>
 		   </EmuchievementsStateContextProvider>
 	);
-	let myPatch: Patch = replacePatch(
-		   Achievements.__proto__,
-		   "GetMyAchievements",
-		   args => {
-			   //console.log(args, appStore.GetAppOverviewByAppID(args[0]), appDetailsStore.GetAppDetails(args[0]));
-			   if (appStore.GetAppOverviewByAppID(args[0])?.app_type == 1073741824)
-			   {
-				   let data = achievementManager.fetchAchievements(args[0]);
-				   //console.log(data.all);
-				   return data.all;
-			   }
-			   return callOriginal;
-		   }
-	);
-	let globalPatch: Patch = replacePatch(
-		   Achievements.__proto__,
-		   "GetGlobalAchievements",
-		   args => {
-			   //console.log(args, appStore.GetAppOverviewByAppID(args[0]), appDetailsStore.GetAppDetails(args[0]));
-			   if (appStore.GetAppOverviewByAppID(args[0])?.app_type == 1073741824)
-			   {
-				   let data = achievementManager.fetchAchievements(args[0]);
-				   //console.log(data.global);
-				   return data.global;
-
-			   }
-			   return callOriginal;
-		   }
-	);
-	let sectionPatch: Patch = afterPatch(AppDetailsSections.prototype, 'render', (_: Record<string, unknown>[], component: any) => {
-		const overview: AppOverview = component._owner.pendingProps.overview;
-		const details: AppDetails = component._owner.pendingProps.details;
-		console.log(component._owner.pendingProps)
-		if (overview.app_type === 1073741824)
+	let myPatch: Patch;
+	let globalPatch: Patch;
+	let sectionPatch: Patch
+	const initCallback = async (username: string): Promise<void> => {
+		if (await waitForServicesInitialized())
 		{
-			if (achievementManager.isReady(overview.appid))
-			{
-				const ret = achievementManager.fetchAchievements(overview.appid);
-				runInAction(() => {
-					if (ret.all.data)
-					{
-						details.achievements.nAchieved = Object.keys(ret.all.data.achieved).length;
-						details.achievements.nTotal = Object.keys(ret.all.data.achieved).length + Object.keys(ret.all.data.unachieved).length;
-						details.achievements.vecHighlight = [];
-						Object.entries(ret.all.data.achieved).forEach(([, value]) => {
-							details.achievements.vecHighlight.push(value)
-						});
-						details.achievements.vecUnachieved = [];
-						Object.entries(ret.all.data.unachieved).forEach(([, value]) => {
-							details.achievements.vecUnachieved.push(value)
-						});
-						//console.log("Added achievements to ", details);
-					}
-				});
-				console.log("proto", component._owner.type.prototype)
-				afterPatch(
-					   component._owner.type.prototype,
-					   "GetSections",
-					   (_: Record<string, unknown>[], ret3: Set<string>) => {
-						   if (achievementManager.isReady(overview.appid)) ret3.add("achievements");
-						   else ret3.delete("achievements");
-						   return ret3;
+			logger.log(`Initializing plugin for ${username}`);
+			myPatch = replacePatch(
+				   Achievements.__proto__,
+				   "GetMyAchievements",
+				   args => {
+					   //console.log(args, appStore.GetAppOverviewByAppID(args[0]), appDetailsStore.GetAppDetails(args[0]));
+					   if (appStore.GetAppOverviewByAppID(args[0])?.app_type == 1073741824)
+					   {
+						   let data = state.managers.achievementManager.fetchAchievements(args[0]);
+						   //console.log(data.all);
+						   return data.all;
 					   }
-				);
+					   return callOriginal;
+				   }
+			);
+			globalPatch = replacePatch(
+				   Achievements.__proto__,
+				   "GetGlobalAchievements",
+				   args => {
+					   //console.log(args, appStore.GetAppOverviewByAppID(args[0]), appDetailsStore.GetAppDetails(args[0]));
+					   if (appStore.GetAppOverviewByAppID(args[0])?.app_type === 1073741824)
+					   {
+						   let data = state.managers.achievementManager.fetchAchievements(args[0]);
+						   //console.log(data.global);
+						   return data.global;
 
-			}
-		}
-		return component;
-	});
-
-
-	achievementManager.init().then(() => {
-		SteamClient.Apps.GetAllShortcuts().then(async (shortcuts: SteamShortcut[]) => {
-			serverAPI.callPluginMethod<{}, boolean>("isHidden", {}).then(hidden => {
-				console.log("hidden: ", hidden)
-				let app_ids: number[] = [];
-				for (const app_id of shortcuts.map(shortcut => shortcut.appid))
+					   }
+					   return callOriginal;
+				   }
+			);
+			sectionPatch = afterPatch(AppDetailsSections.prototype, 'render', (_: Record<string, unknown>[], component: any) => {
+				const overview: SteamAppOverview = component._owner.pendingProps.overview;
+				const details: SteamAppDetails = component._owner.pendingProps.details;
+				console.debug(component._owner.pendingProps)
+				if (overview.app_type === 1073741824)
 				{
-					if (achievementManager.isReady(app_id))
+					if (state.managers.achievementManager.isReady(overview.appid))
 					{
-						app_ids.push(app_id)
+						void state.managers.achievementManager.set_achievements_for_details(overview.appid, details)
+						console.debug("proto", component._owner.type.prototype)
+						afterPatch(
+							   component._owner.type.prototype,
+							   "GetSections",
+							   (_: Record<string, unknown>[], ret3: Set<string>) => {
+								   if (state.managers.achievementManager.isReady(overview.appid)) ret3.add("achievements");
+								   else ret3.delete("achievements");
+								   return ret3;
+							   }
+						);
+
 					}
 				}
-				if (hidden.success)
-				{
-					if (hidden.result)
-					{
-						app_ids.forEach(app_id => {
-							hideApp(app_id);
-						})
-					} else
-					{
-						app_ids.forEach(app_id => {
-							showApp(app_id);
-						})
-					}
-				}
+				return component;
 			});
-		});
-	});
+			void state.init();
+		}
+
+
+	}
+	const deinitCallback = (): void => {
+		logger.log("Deinitializing plugin");
+		myPatch?.unpatch();
+		globalPatch?.unpatch();
+		sectionPatch?.unpatch();
+		void state.deinit();
+	};
+
+	const unregister = registerForLoginStateChange(
+		   username => {
+			   void initCallback(username).catch((e) => logger.error(e));
+		   },
+		   deinitCallback
+	);
 
 
 	//console.log(d);
@@ -164,24 +140,14 @@ export default definePlugin((serverAPI: ServerAPI) => {
 		title: <div className={staticClasses.Title}>Emuchievements</div>,
 		content:
 			   <EmuchievementsStateContextProvider emuchievementsState={state}>
-				   <PanelSectionRow>
-					   <ButtonItem onClick={() => {
-						   Navigation.CloseSideMenus()
-						   Navigation.Navigate("/emuchievements/settings")
-					   }}>
-						   Settings
-					   </ButtonItem>
-				   </PanelSectionRow>
-				   <EmuchievementsComponent achievementManager={achievementManager} serverAPI={serverAPI}/>
+				   <EmuchievementsComponent/>
 			   </EmuchievementsStateContextProvider>,
 		icon: <FaClipboardCheck/>,
 		onDismount()
 		{
 			serverAPI.routerHook.removeRoute("/emuchievements/settings");
-			myPatch?.unpatch();
-			globalPatch?.unpatch();
-			sectionPatch?.unpatch();
-			achievementManager.deinit();
+			unregister();
+			deinitCallback();
 		},
 	};
 });

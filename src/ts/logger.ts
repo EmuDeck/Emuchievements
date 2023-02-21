@@ -1,5 +1,5 @@
 export const log = (name: string, ...args: any[]) => {
-	if (process.env.NODE_ENV === 'development')
+	// if (process.env.NODE_ENV === 'development')
 		console.log(
 			   `%c Emuchievements %c ${name} %c`,
 			   'background: #16a085; color: black;',
@@ -21,7 +21,7 @@ export const debug = (name: string, ...args: any[]) => {
 };
 
 export const error = (name: string, ...args: any[]) => {
-	if (process.env.NODE_ENV === 'development')
+	// if (process.env.NODE_ENV === 'development')
 		console.error(
 			   `%c Emuchievements %c ${name} %c`,
 			   'background: #16a085; color: black;',

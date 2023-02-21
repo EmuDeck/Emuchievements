@@ -9,7 +9,7 @@ import importAssets from 'rollup-plugin-import-assets';
 import {name} from "./plugin.json";
 import {createPathTransform} from "rollup-sourcemap-path-transform";
 
-const production = process.env.NODE_ENV !== 'development'
+const production = process.env["RELEASE_TYPE"] !== 'development'
 
 export default defineConfig({
 	input: './src/ts/index.tsx',
@@ -20,7 +20,7 @@ export default defineConfig({
 		json(),
 		replace({
 			preventAssignment: false,
-			'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
+			'process.env.NODE_ENV': JSON.stringify(process.env["RELEASE_TYPE"]),
 		}),
 		importAssets({
 			publicPath: `http://127.0.0.1:1337/plugins/${name}/`
@@ -47,3 +47,4 @@ export default defineConfig({
 		exports: 'default',
 	},
 });
+

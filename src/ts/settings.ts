@@ -1,11 +1,5 @@
 import {ServerAPI} from "decky-frontend-lib";
 
-export let serverAPI: ServerAPI
-export function setServerAPI(api: ServerAPI): void
-{
-	serverAPI = api;
-}
-
 interface GetSettingArgs<T> {
 	key: string;
 	default: T;
@@ -16,7 +10,8 @@ interface SetSettingArgs<T> {
 	value: T;
 }
 
-export async function getSetting<T>(key: string, def: T): Promise<T> {
+export async function getSetting<T>(key: string, def: T, serverAPI: ServerAPI): Promise<T>
+{
 	const res = (await serverAPI.callPluginMethod('getSetting', {
 		key,
 		default: def,
@@ -24,7 +19,7 @@ export async function getSetting<T>(key: string, def: T): Promise<T> {
 	return res.result;
 }
 
-export async function setSetting<T>(key: string, value: T): Promise<void> {
+export async function setSetting<T>(key: string, value: T, serverAPI: ServerAPI): Promise<void> {
 	await serverAPI.callPluginMethod('setSetting', {
 		key,
 		value,

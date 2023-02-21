@@ -1,19 +1,8 @@
 import {ServerAPI} from "decky-frontend-lib";
-import {AchievementManager} from "./AchievementsManager";
 
 export interface APIProps
 {
     serverAPI: ServerAPI
-}
-
-export interface SettingsProps extends APIProps
-{
-	achievementManager: AchievementManager
-}
-
-export interface EmuchievementsProps extends APIProps
-{
-	achievementManager: AchievementManager
 }
 
 export interface Achievement {

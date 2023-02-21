@@ -1,7 +1,7 @@
 import {Achievement, Game} from "./interfaces";
-import {AppAchievement} from "./SteamClient"
+import {SteamAppAchievement} from "./SteamTypes";
 
-export const retroAchievementToSteamAchievement = (achievement: Achievement, game: Game): AppAchievement => {
+export const retroAchievementToSteamAchievement = (achievement: Achievement, game: Game): SteamAppAchievement => {
 	return {
 		bAchieved: !!(achievement.date_awarded),
 		bHidden: false,
