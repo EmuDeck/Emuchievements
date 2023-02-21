@@ -7,7 +7,7 @@ lib-cov
 *.pid
 *.gz
 *.swp
-backend/src/*.o
+backend/**/*.o
 
 pids
 logs
