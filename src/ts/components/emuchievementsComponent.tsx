@@ -60,7 +60,7 @@ export const EmuchievementsComponent: VFC = () =>
 							 </PanelSectionRow>
 							 {
 								 (() => {
-									 logger.log(appIds);
+									 logger.debug(appIds);
 									 return appIds?.map(appId => {
 										 // Fetch all the achievements for each appId.
 										 const achievements = achievementManager.fetchAchievementsProgress(appId);

@@ -3,7 +3,6 @@ import {createContext, FC, ReactNode, useContext, useEffect, useState} from "rea
 import {AchievementManager, Manager} from "../AchievementsManager";
 import {getAllNonSteamAppOverview} from "../steam-utils";
 import {Promise} from "bluebird";
-import Logger from "../logger";
 
 interface LoadingData
 {
@@ -32,7 +31,6 @@ interface EmuchievementsStateContext
 	refresh(): void
 }
 
-const logger = new Logger("state")
 export class EmuchievementsState
 {
 	private _loadingData: LoadingData = new class implements LoadingData
@@ -173,7 +171,6 @@ export class EmuchievementsState
 
 	private notifyUpdate(): void
 	{
-		logger.log(this)
 		this.eventBus.dispatchEvent(new Event('update'));
 	}
 }
