@@ -13,6 +13,7 @@ import {
 } from "./steam-utils";
 import {AllAchievements, GlobalAchievements, SteamAppDetails} from "./SteamTypes";
 import {Promise} from "bluebird";
+
 localforage.config({
 	name: "emuchievements",
 	storeName: "achievements"
@@ -148,9 +149,9 @@ export class AchievementManager implements Manager
 				this.logger.debug(`${app_id} shortcut: `, shortcut)
 				if (shortcut)
 				{
-					const launchOptions = shortcut.strShortcutLaunchOptions
-					this.logger.debug(`${app_id} launchOptions: `, launchOptions)
-					const rom = launchOptions?.match(new RegExp(romRegex, "i"))?.[0];
+					const launchCommand = `${shortcut.strShortcutExe} ${shortcut.strShortcutLaunchOptions}`
+					this.logger.debug(`${app_id} launchCommand: `, launchCommand)
+					const rom = launchCommand?.match(new RegExp(romRegex, "i"))?.[0];
 					this.logger.debug(`${app_id} rom: `, rom)
 					if (rom)
 					{
@@ -423,10 +424,10 @@ export class AchievementManager implements Manager
 
 	async refresh_shortcuts(): Promise<void>
 	{
-		const shortcuts = await getAllNonSteamAppOverview()
-		const hidden = await this.serverAPI.callPluginMethod<{}, boolean>("isHidden", {})
-		this?.logger.debug("hidden: ", hidden)
-		let app_ids: number[] = shortcuts.map(shortcut => shortcut.appid).filter(this.isReady);
+		const shortcuts = await getAllNonSteamAppOverview();
+		const hidden = await this.serverAPI.callPluginMethod<{}, boolean>("isHidden", {});
+		this.logger.debug("hidden: ", hidden);
+		let app_ids: number[] = shortcuts.map(shortcut => shortcut.appid).filter(appid => this.isReady(appid));
 		for (const app_id of app_ids)
 		{
 			await showApp(app_id);
