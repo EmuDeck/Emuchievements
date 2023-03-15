@@ -46,7 +46,7 @@ const Achievements = (findModuleChild(module => {
 	}
 }));
 
-export default definePlugin((serverAPI: ServerAPI) => {
+export default definePlugin(function (serverAPI: ServerAPI) {
 	const logger = new Logger("Index");
 	const state = new EmuchievementsState(serverAPI);
 	serverAPI.routerHook.addRoute("/emuchievements/settings", () =>
@@ -56,82 +56,82 @@ export default definePlugin((serverAPI: ServerAPI) => {
 	);
 	let myPatch: Patch;
 	let globalPatch: Patch;
-	let sectionPatch: Patch
-	const initCallback = async (username: string): Promise<void> => {
-		if (await waitForServicesInitialized())
-		{
-			logger.log(`Initializing plugin for ${username}`);
-			myPatch = replacePatch(
-				   Achievements.__proto__,
-				   "GetMyAchievements",
-				   args => {
-					   //console.log(args, appStore.GetAppOverviewByAppID(args[0]), appDetailsStore.GetAppDetails(args[0]));
-					   if (appStore.GetAppOverviewByAppID(args[0])?.app_type == 1073741824)
-					   {
-						   let data = state.managers.achievementManager.fetchAchievements(args[0]);
-						   //console.log(data.all);
-						   return data.all;
-					   }
-					   return callOriginal;
-				   }
-			);
-			globalPatch = replacePatch(
-				   Achievements.__proto__,
-				   "GetGlobalAchievements",
-				   args => {
-					   //console.log(args, appStore.GetAppOverviewByAppID(args[0]), appDetailsStore.GetAppDetails(args[0]));
-					   if (appStore.GetAppOverviewByAppID(args[0])?.app_type === 1073741824)
-					   {
-						   let data = state.managers.achievementManager.fetchAchievements(args[0]);
-						   //console.log(data.global);
-						   return data.global;
-
-					   }
-					   return callOriginal;
-				   }
-			);
-			sectionPatch = afterPatch(AppDetailsSections.prototype, 'render', (_: Record<string, unknown>[], component: any) => {
-				const overview: SteamAppOverview = component._owner.pendingProps.overview;
-				const details: SteamAppDetails = component._owner.pendingProps.details;
-				console.debug(component._owner.pendingProps)
-				if (overview.app_type === 1073741824)
-				{
-					if (state.managers.achievementManager.isReady(overview.appid))
-					{
-						void state.managers.achievementManager.set_achievements_for_details(overview.appid, details)
-						console.debug("proto", component._owner.type.prototype)
-						afterPatch(
-							   component._owner.type.prototype,
-							   "GetSections",
-							   (_: Record<string, unknown>[], ret3: Set<string>) => {
-								   if (state.managers.achievementManager.isReady(overview.appid)) ret3.add("achievements");
-								   else ret3.delete("achievements");
-								   return ret3;
-							   }
-						);
-
-					}
-				}
-				return component;
-			});
-			void state.init();
-		}
-
-
-	}
-	const deinitCallback = (): void => {
-		logger.log("Deinitializing plugin");
-		myPatch?.unpatch();
-		globalPatch?.unpatch();
-		sectionPatch?.unpatch();
-		void state.deinit();
-	};
+	let sectionPatch: Patch;
 
 	const unregister = registerForLoginStateChange(
-		   username => {
-			   void initCallback(username).catch((e) => logger.error(e));
+		   function (username) {
+			   (async function () {
+				   if (await waitForServicesInitialized())
+				   {
+					   logger.log(`Initializing plugin for ${username}`);
+					   myPatch = replacePatch(
+							 Achievements.__proto__,
+							 "GetMyAchievements",
+							 args => {
+								 //console.log(args, appStore.GetAppOverviewByAppID(args[0]), appDetailsStore.GetAppDetails(args[0]));
+								 if (appStore.GetAppOverviewByAppID(args[0])?.app_type == 1073741824)
+								 {
+									 let data = state.managers.achievementManager.fetchAchievements(args[0]);
+									 //console.log(data.all);
+									 return data.all;
+								 }
+								 return callOriginal;
+							 }
+					   );
+					   globalPatch = replacePatch(
+							 Achievements.__proto__,
+							 "GetGlobalAchievements",
+							 args => {
+								 //console.log(args, appStore.GetAppOverviewByAppID(args[0]), appDetailsStore.GetAppDetails(args[0]));
+								 if (appStore.GetAppOverviewByAppID(args[0])?.app_type === 1073741824)
+								 {
+									 let data = state.managers.achievementManager.fetchAchievements(args[0]);
+									 //console.log(data.global);
+									 return data.global;
+
+								 }
+								 return callOriginal;
+							 }
+					   );
+					   sectionPatch = afterPatch(AppDetailsSections.prototype, 'render', (_: Record<string, unknown>[], component: any) => {
+						   const overview: SteamAppOverview = component._owner.pendingProps.overview;
+						   const details: SteamAppDetails = component._owner.pendingProps.details;
+						   console.debug(component._owner.pendingProps)
+						   if (overview.app_type === 1073741824)
+						   {
+							   if (state.managers.achievementManager.isReady(overview.appid))
+							   {
+								   void state.managers.achievementManager.set_achievements_for_details(overview.appid, details)
+								   console.debug("proto", component._owner.type.prototype)
+								   afterPatch(
+										 component._owner.type.prototype,
+										 "GetSections",
+										 (_: Record<string, unknown>[], ret3: Set<string>) => {
+											 if (state.managers.achievementManager.isReady(overview.appid)) ret3.add("achievements");
+											 else ret3.delete("achievements");
+											 return ret3;
+										 }
+								   );
+
+							   }
+						   }
+						   return component;
+					   });
+					   await state.init();
+				   }
+			   })().catch(err => logger.error("Error while initializing plugin", err));
 		   },
-		   deinitCallback
+		   function () {
+			   {
+				   (async function () {
+					   logger.log("Deinitializing plugin");
+					   myPatch?.unpatch();
+					   globalPatch?.unpatch();
+					   sectionPatch?.unpatch();
+					   await state.deinit();
+				   })().catch(err => logger.error("Error while deinitializing plugin", err));
+			   }
+		   }
 	);
 
 
@@ -147,7 +147,6 @@ export default definePlugin((serverAPI: ServerAPI) => {
 		{
 			serverAPI.routerHook.removeRoute("/emuchievements/settings");
 			unregister();
-			deinitCallback();
 		},
 	};
 });

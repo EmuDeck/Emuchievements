@@ -39,11 +39,11 @@ export interface AchievementsProgress
 
 export class AchievementManager implements Manager
 {
-	private _state: EmuchievementsState | undefined;
+	private _state: EmuchievementsState;
 
 	get state(): EmuchievementsState
 	{
-		return this._state!;
+		return this._state;
 	}
 
 	set state(value: EmuchievementsState)
@@ -58,9 +58,7 @@ export class AchievementManager implements Manager
 
 	set globalLoading(value: boolean)
 	{
-		let state = this.state.loadingData;
-		state.globalLoading = value;
-		this.state.loadingData = state;
+		this.state.loadingData.globalLoading = value;
 	}
 
 	get processed(): number
@@ -70,9 +68,7 @@ export class AchievementManager implements Manager
 
 	set processed(value: number)
 	{
-		let state = this.state.loadingData;
-		state.processed = value;
-		this.state.loadingData = state;
+		this.state.loadingData.processed = value;
 	}
 
 	get total(): number
@@ -82,21 +78,17 @@ export class AchievementManager implements Manager
 
 	set total(value: number)
 	{
-		let state = this.state.loadingData;
-		state.total = value;
-		this.state.loadingData = state;
+		this.state.loadingData.total = value;
 	}
 
 	get currentGame(): string
 	{
-		return this.state.loadingData?.currentGame;
+		return this.state.loadingData.currentGame;
 	}
 
 	set currentGame(value: string)
 	{
-		let state = this.state.loadingData;
-		state.currentGame = value;
-		this.state.loadingData = state
+		this.state.loadingData.currentGame = value;
 	}
 
 	get serverAPI(): ServerAPI {
@@ -105,7 +97,7 @@ export class AchievementManager implements Manager
 
 	constructor(state: EmuchievementsState)
 	{
-		this.state = state;
+		this._state = state;
 	}
 
 	private achievements: { [key: number]: AllAchievements } = {0: {loading: false}};
@@ -124,6 +116,8 @@ export class AchievementManager implements Manager
 	public clearCache()
 	{
 		localforage.clear();
+		this.achievements = {0: {loading: false}};
+		this.loading = {0: false};
 	};
 
 	public async getCache(appId: string): Promise<AchievementsData | null>
@@ -152,11 +146,11 @@ export class AchievementManager implements Manager
 			{
 				const shortcut = await getAppDetails(app_id)
 				this.logger.debug(`${app_id} shortcut: `, shortcut)
-				if (shortcut && shortcut.strShortcutExe)
+				if (shortcut)
 				{
-					const exe = shortcut.strShortcutExe
-					this.logger.debug(`${app_id} exe: `, exe)
-					const rom = exe.match(new RegExp(romRegex, "i"))?.[0];
+					const launchOptions = shortcut.strShortcutLaunchOptions
+					this.logger.debug(`${app_id} launchOptions: `, launchOptions)
+					const rom = launchOptions?.match(new RegExp(romRegex, "i"))?.[0];
 					this.logger.debug(`${app_id} rom: `, rom)
 					if (rom)
 					{
@@ -196,7 +190,7 @@ export class AchievementManager implements Manager
 							} else reject(new Error(response.result));
 						} else reject(new Error(md5.result));
 					} else resolve(undefined);
-				} else reject(new Error(`${app_id}: ${shortcut}`));
+				} else resolve(undefined);
 			}
 		});
 	}
@@ -356,6 +350,7 @@ export class AchievementManager implements Manager
 
 	async refresh_achievements(): Promise<void>
 	{
+		this.clearCache();
 		await this.refresh_achievements_for_apps((await getAllNonSteamAppOverview()).map((shortcut) => shortcut.appid))
 	}
 
@@ -364,13 +359,14 @@ export class AchievementManager implements Manager
 		this.globalLoading = true;
 		this.total = app_ids.length;
 		this.processed = 0;
-		await Promise.map(app_ids, (async (app_id) => await this.refresh_achievements_for_app(app_id)));
+		await Promise.map(app_ids, (async (app_id) => await this.refresh_achievements_for_app(app_id)), {
+			concurrency: 3
+		});
 		this.globalLoading = false;
 	}
 
 	private async refresh_achievements_for_app(app_id: number): Promise<void>
 	{
-		this.logger.debug(app_id)
 		const overview = appStore.GetAppOverviewByAppID(app_id);
 
 		const details = await getAppDetails(app_id)
@@ -385,6 +381,7 @@ export class AchievementManager implements Manager
 			this.currentGame = `${(`${overview.display_name} ` ?? "")}: no achievements found`;
 			this.processed++;
 		}
+		this.logger.debug(`loading achievements: ${this.state.loadingData.percentage}% done`, app_id, details, overview)
 	}
 
 	async set_achievements_for_details(app_id: number, details: SteamAppDetails): Promise<number>
@@ -428,7 +425,7 @@ export class AchievementManager implements Manager
 	{
 		const shortcuts = await getAllNonSteamAppOverview()
 		const hidden = await this.serverAPI.callPluginMethod<{}, boolean>("isHidden", {})
-		this.logger.debug("hidden: ", hidden)
+		this?.logger.debug("hidden: ", hidden)
 		let app_ids: number[] = shortcuts.map(shortcut => shortcut.appid).filter(this.isReady);
 		for (const app_id of app_ids)
 		{

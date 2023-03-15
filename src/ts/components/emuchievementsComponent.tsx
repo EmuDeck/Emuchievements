@@ -1,4 +1,4 @@
-import React, {useEffect, useState, VFC} from "react";
+import {useEffect, useState, VFC} from "react";
 import {
 	ButtonItem,
 	Field,
@@ -83,7 +83,7 @@ export const EmuchievementsComponent: VFC = () =>
 													    </Field>
 												    </PanelSectionRow>
 											 );
-										 } else return <></>;
+										 } else return undefined;
 									 });
 								 })()
 							 }

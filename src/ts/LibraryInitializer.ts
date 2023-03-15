@@ -7,7 +7,7 @@ interface LibraryInitializer {
 export function registerForLoginStateChange(onLogin: (username: string) => void, onLogout: () => void): () => void {
 	try {
 		let isLoggedIn: boolean | null = null;
-		return SteamClient.User.RegisterForLoginStateChange((username: string) => {
+		let unregister =  SteamClient.User.RegisterForLoginStateChange((username: string) => {
 			if (username === "") {
 				if (isLoggedIn !== false) {
 					onLogout();
@@ -20,6 +20,10 @@ export function registerForLoginStateChange(onLogin: (username: string) => void,
 				isLoggedIn = true;
 			}
 		}).unregister;
+		return (() => {
+			unregister();
+			onLogout();
+		})
 	} catch (error) {
 		console.error(error);
 		// eslint-disable-next-line @typescript-eslint/no-empty-function

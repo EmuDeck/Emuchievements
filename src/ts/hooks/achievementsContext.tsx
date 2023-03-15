@@ -7,11 +7,15 @@ import Logger from "../logger";
 
 interface LoadingData
 {
-	globalLoading: boolean,
-	currentGame: string,
-	processed: number,
-	total: number,
 	get percentage(): number
+	get globalLoading(): boolean,
+	set globalLoading(value: boolean),
+	get currentGame(): string,
+	set currentGame(value: string),
+	get processed(): number,
+	set processed(value: number),
+     get total(): number,
+	set total(value: number)
 }
 
 interface Managers
@@ -31,16 +35,70 @@ interface EmuchievementsStateContext
 const logger = new Logger("state")
 export class EmuchievementsState
 {
-	private _loadingData: LoadingData = {
+	private _loadingData: LoadingData = new class implements LoadingData
+	{
+		private state: EmuchievementsState;
+
+		constructor(outer: EmuchievementsState)
+		{
+			this.state = outer;
+		}
+
 		get percentage(): number
 		{
 			return (this.processed / this.total) * 100;
-		},
-		globalLoading: false,
-		total: 0,
-		processed: 0,
-		currentGame: "fetching"
-	};
+		}
+
+		private _globalLoading = false;
+
+		get globalLoading(): boolean
+		{
+			return this._globalLoading;
+		}
+
+		set globalLoading(value: boolean)
+		{
+			this._globalLoading = value;
+			this.state.notifyUpdate();
+		}
+
+		private _total =  0;
+		get total(): number
+		{
+			return this._total;
+		}
+
+		set total(value: number)
+		{
+			this._total = value;
+			this.state.notifyUpdate();
+		}
+
+		private _processed = 0;
+		get processed(): number
+		{
+			return this._processed;
+		}
+
+		set processed(value: number)
+		{
+			this._processed = value;
+			this.state.notifyUpdate();
+		}
+
+		private _currentGame = "fetching";
+		get currentGame(): string
+		{
+			return this._currentGame;
+		}
+
+		set currentGame(value: string)
+		{
+			this._currentGame = value;
+			this.state.notifyUpdate();
+		}
+	}(this);
+
 	private readonly _serverAPI;
 
 	constructor(serverAPI: ServerAPI)
@@ -61,7 +119,7 @@ export class EmuchievementsState
 			managers: this.managers,
 			apps: this.apps,
 			serverAPI: this.serverAPI,
-			refresh: () => void this.refresh()
+			refresh: () => this.refresh()
 		};
 	}
 
@@ -73,12 +131,6 @@ export class EmuchievementsState
 	get loadingData(): LoadingData
 	{
 		return this._loadingData;
-	}
-
-	set loadingData(loadingData: LoadingData)
-	{
-		this._loadingData = loadingData;
-		this.notifyUpdate();
 	}
 
 	get apps(): Promise<number[]>
