@@ -133,7 +133,16 @@ export class EmuchievementsState
 
 	get apps(): Promise<number[]>
 	{
-		return (async () => (await getAllNonSteamAppOverview()).map((app) => app.appid).filter((app_id) => this._managers.achievementManager.isReady(app_id)))()
+		return (async () => (await getAllNonSteamAppOverview()).filter((overview) => this._managers.achievementManager.isReady(overview.appid)).sort( (a, b) => {
+
+			if (a.display_name < b.display_name) {
+				return -1;
+			}
+			if (a.display_name > b.display_name) {
+				return 1;
+			}
+			return 0;
+		}).map(overview => overview.appid))();
 	}
 
 	get serverAPI(): ServerAPI

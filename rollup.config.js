@@ -7,6 +7,7 @@ import {defineConfig} from 'rollup';
 import importAssets from 'rollup-plugin-import-assets';
 
 import {name} from "./plugin.json";
+import {version} from "./package.json";
 import {createPathTransform} from "rollup-sourcemap-path-transform";
 
 const production = process.env["RELEASE_TYPE"] !== 'development'
@@ -21,6 +22,7 @@ export default defineConfig({
 		replace({
 			preventAssignment: false,
 			'process.env.NODE_ENV': JSON.stringify(process.env["RELEASE_TYPE"]),
+			'process.env.VERSION': JSON.stringify(version),
 		}),
 		importAssets({
 			publicPath: `http://127.0.0.1:1337/plugins/${name}/`

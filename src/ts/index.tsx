@@ -13,6 +13,7 @@ import {EmuchievementsState, EmuchievementsStateContextProvider} from "./hooks/a
 import {registerForLoginStateChange, waitForServicesInitialized} from "./LibraryInitializer";
 import Logger from "./logger";
 import {CollectionStore, AppDetailsStore, SteamAppOverview, SteamAppDetails} from "./SteamTypes";
+import {StoreCategory} from "./interfaces";
 
 declare global
 {
@@ -57,6 +58,7 @@ export default definePlugin(function (serverAPI: ServerAPI) {
 	let myPatch: Patch;
 	let globalPatch: Patch;
 	let sectionPatch: Patch;
+	let storeCategoryPatch: Patch;
 
 	const unregister = registerForLoginStateChange(
 		   function (username) {
@@ -78,6 +80,13 @@ export default definePlugin(function (serverAPI: ServerAPI) {
 								 return callOriginal;
 							 }
 					   );
+					   afterPatch(Achievements.__proto__,
+							 "GetMyAchievements",
+							 (_, ret) => {
+						          logger.debug(ret)
+						   		return ret;
+							 }
+					   )
 					   globalPatch = replacePatch(
 							 Achievements.__proto__,
 							 "GetGlobalAchievements",
@@ -93,6 +102,23 @@ export default definePlugin(function (serverAPI: ServerAPI) {
 								 return callOriginal;
 							 }
 					   );
+					   storeCategoryPatch = replacePatch(
+							 // @ts-ignore
+							 appStore.allApps[0].__proto__,
+							 "BHasStoreCategory",
+							 function (args) {
+								 // @ts-ignore
+								 if ((this as SteamAppOverview).app_type == 1073741824)
+								 {
+									 // @ts-ignore
+									 if (state.managers.achievementManager.isReady((this as SteamAppOverview).appid) && args[0] === StoreCategory.Achievements)
+									 {
+										 return true
+									 }
+								 }
+								 return callOriginal;
+							 }
+					   );
 					   sectionPatch = afterPatch(AppDetailsSections.prototype, 'render', (_: Record<string, unknown>[], component: any) => {
 						   const overview: SteamAppOverview = component._owner.pendingProps.overview;
 						   const details: SteamAppDetails = component._owner.pendingProps.details;
@@ -101,6 +127,7 @@ export default definePlugin(function (serverAPI: ServerAPI) {
 						   {
 							   if (state.managers.achievementManager.isReady(overview.appid))
 							   {
+								   if (!overview.store_category.includes(StoreCategory.Achievements)) overview.store_category.push(StoreCategory.Achievements)
 								   void state.managers.achievementManager.set_achievements_for_details(overview.appid, details)
 								   console.debug("proto", component._owner.type.prototype)
 								   afterPatch(
@@ -127,6 +154,7 @@ export default definePlugin(function (serverAPI: ServerAPI) {
 					   logger.log("Deinitializing plugin");
 					   myPatch?.unpatch();
 					   globalPatch?.unpatch();
+					   storeCategoryPatch?.unpatch();
 					   sectionPatch?.unpatch();
 					   await state.deinit();
 				   })().catch(err => logger.error("Error while deinitializing plugin", err));

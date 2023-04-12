@@ -9,7 +9,7 @@ export const retroAchievementToSteamAchievement = (achievement: Achievement, gam
 		flCurrentProgress: ((achievement.date_awarded)) ? 1:0,
 		flMaxProgress: 1,
 		flMinProgress: 0,
-		rtUnlocked: 0,
+		rtUnlocked: achievement.date_awarded_hardcore ? ((new Date(achievement.date_awarded_hardcore).getTime() / 1000) + (new Date(achievement.date_awarded_hardcore).getTimezoneOffset() * 60)) : achievement.date_awarded ? ((new Date(achievement.date_awarded).getTime() / 1000) + (new Date(achievement.date_awarded).getTimezoneOffset() * 60)) : 0,
 		strDescription: (achievement.description) ? achievement.description:"",
 		strID: (achievement.title) ?
 				achievement.title

@@ -61,19 +61,19 @@ type SteamAppAchievements = {
 }
 
 type SteamAppAchievement =
-{
-	strID: string,
-	strName: string,
-	strDescription: string,
-	bAchieved: boolean,
-	rtUnlocked: number,
-	strImage: string,
-	bHidden: boolean,
-	flMinProgress: number,
-	flCurrentProgress: number,
-	flMaxProgress: number,
-	flAchieved: number
-}
+	   {
+		   strID: string,
+		   strName: string,
+		   strDescription: string,
+		   bAchieved: boolean,
+		   rtUnlocked: number,
+		   strImage: string,
+		   bHidden: boolean,
+		   flMinProgress: number,
+		   flCurrentProgress: number,
+		   flMaxProgress: number,
+		   flAchieved: number
+	   }
 
 type SteamAppLanguages = {
 	strDisplayName: string,
