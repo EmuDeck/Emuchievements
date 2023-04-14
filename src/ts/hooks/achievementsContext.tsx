@@ -1,8 +1,10 @@
-import { ServerAPI } from "decky-frontend-lib";
+import {ServerAPI} from "decky-frontend-lib";
 import {createContext, FC, ReactNode, useContext, useEffect, useState} from "react";
 import {AchievementManager, Manager} from "../AchievementsManager";
 import {getAllNonSteamAppOverview} from "../steam-utils";
 import {Promise} from "bluebird";
+import {Login} from "../interfaces";
+import {Settings} from "../settings";
 
 interface LoadingData
 {
@@ -28,7 +30,10 @@ interface EmuchievementsStateContext
 	managers: Managers,
 	apps: Promise<number[]>,
 	serverAPI: ServerAPI,
-	refresh(): void
+	settings: Settings,
+	loggedIn: Promise<boolean>,
+	refresh(): Promise<void>,
+	login(login: Login): Promise<void>
 }
 
 export class EmuchievementsState
@@ -98,10 +103,12 @@ export class EmuchievementsState
 	}(this);
 
 	private readonly _serverAPI;
+	private readonly _settings;
 
 	constructor(serverAPI: ServerAPI)
 	{
 		this._serverAPI = serverAPI;
+		this._settings = new Settings(serverAPI, this);
 	}
 
 	private readonly _managers: Managers = {
@@ -117,7 +124,10 @@ export class EmuchievementsState
 			managers: this.managers,
 			apps: this.apps,
 			serverAPI: this.serverAPI,
-			refresh: () => this.refresh()
+			settings: this.settings,
+			loggedIn: this.loggedIn,
+			refresh: () => this.refresh(),
+			login: (login: Login) => this.login(login)
 		};
 	}
 
@@ -150,6 +160,23 @@ export class EmuchievementsState
 		return this._serverAPI;
 	}
 
+	get settings(): Settings
+     {
+		return this._settings;
+	}
+
+	get loggedIn(): Promise<boolean>
+	{
+		return (async () => {
+			const authenticated = await this.serverAPI.fetchNoCors<{ body: string; status: number }>(`https://retroachievements.org/API/API_GetGameInfoAndUserProgress.php?z=${this.settings.username}&y=${this.settings.api_key}`)
+			if (authenticated.success)
+			{
+				return authenticated.result.body !== "Invalid API Key";
+			}
+			return false;
+		})();
+	}
+
 	async init(): Promise<void>
 	{
 		Promise.map(Object.values(this._managers), (async (manager: Manager) => {
@@ -178,7 +205,13 @@ export class EmuchievementsState
 		});
 	}
 
-	private notifyUpdate(): void
+	async login({username, api_key}: Login): Promise<void>
+	{
+		this.settings.username = username
+		this.settings.api_key = api_key
+	}
+
+	notifyUpdate(): void
 	{
 		this.eventBus.dispatchEvent(new Event('update'));
 	}

@@ -1,5 +1,5 @@
 import {
-	afterPatch, callOriginal,
+	afterPatch, AppAchievements, callOriginal,
 	definePlugin,
 	findModuleChild, Patch,
 	replacePatch,
@@ -12,7 +12,7 @@ import {EmuchievementsComponent} from "./components/emuchievementsComponent";
 import {EmuchievementsState, EmuchievementsStateContextProvider} from "./hooks/achievementsContext";
 import {registerForLoginStateChange, waitForServicesInitialized} from "./LibraryInitializer";
 import Logger from "./logger";
-import {CollectionStore, AppDetailsStore, SteamAppOverview, SteamAppDetails} from "./SteamTypes";
+import {CollectionStore, AppDetailsStore, SteamAppOverview, SteamAppAchievement} from "./SteamTypes";
 import {StoreCategory} from "./interfaces";
 
 declare global
@@ -47,6 +47,11 @@ const Achievements = (findModuleChild(module => {
 	}
 }));
 
+interface Hook
+{
+	unregister(): void
+}
+
 export default definePlugin(function (serverAPI: ServerAPI) {
 	const logger = new Logger("Index");
 	const state = new EmuchievementsState(serverAPI);
@@ -59,6 +64,8 @@ export default definePlugin(function (serverAPI: ServerAPI) {
 	let globalPatch: Patch;
 	let sectionPatch: Patch;
 	let storeCategoryPatch: Patch;
+	let achievementsPatch: Patch;
+	let lifetimeHook: Hook;
 
 	const unregister = registerForLoginStateChange(
 		   function (username) {
@@ -83,8 +90,8 @@ export default definePlugin(function (serverAPI: ServerAPI) {
 					   afterPatch(Achievements.__proto__,
 							 "GetMyAchievements",
 							 (_, ret) => {
-						          logger.debug(ret)
-						   		return ret;
+								 logger.debug(ret)
+								 return ret;
 							 }
 					   )
 					   globalPatch = replacePatch(
@@ -119,23 +126,53 @@ export default definePlugin(function (serverAPI: ServerAPI) {
 								 return callOriginal;
 							 }
 					   );
+					   achievementsPatch = replacePatch(
+							 appDetailsStore,
+							 "GetAchievements",
+							 args => {
+								 if (state.managers.achievementManager.isReady(args[0]))
+								 {
+									 const achievements = state.managers.achievementManager.fetchAchievements(args[0]);
+									 if (achievements.all.data)
+									 {
+										 const vecHighlight: SteamAppAchievement[] = [];
+										 Object.entries(achievements.all.data.achieved).forEach(([, value]) => {
+											 vecHighlight.push(value)
+										 });
+										 const vecUnachieved: SteamAppAchievement[] = [];
+										 Object.entries(achievements.all.data.unachieved).forEach(([, value]) => {
+											 vecUnachieved.push(value)
+										 });
+										 const retAchievements: AppAchievements = {
+											 nAchieved: Object.keys(achievements.all.data.achieved).length,
+											 nTotal: Object.keys(achievements.all.data.achieved).length + Object.keys(achievements.all.data.unachieved).length,
+											 vecAchievedHidden: [],
+											 vecHighlight,
+											 vecUnachieved
+										 };
+										 return retAchievements;
+									 }
+								 }
+								 return callOriginal
+							 }
+					   )
 					   sectionPatch = afterPatch(AppDetailsSections.prototype, 'render', (_: Record<string, unknown>[], component: any) => {
 						   const overview: SteamAppOverview = component._owner.pendingProps.overview;
-						   const details: SteamAppDetails = component._owner.pendingProps.details;
-						   console.debug(component._owner.pendingProps)
+						   // const details: SteamAppDetails = component._owner.pendingProps.details;
+						   logger.debug(component._owner.pendingProps)
 						   if (overview.app_type === 1073741824)
 						   {
 							   if (state.managers.achievementManager.isReady(overview.appid))
 							   {
-								   if (!overview.store_category.includes(StoreCategory.Achievements)) overview.store_category.push(StoreCategory.Achievements)
-								   void state.managers.achievementManager.set_achievements_for_details(overview.appid, details)
-								   console.debug("proto", component._owner.type.prototype)
+								   // void state.managers.achievementManager.set_achievements_for_details(overview.appid, details)
+								   logger.debug("proto", component._owner.type.prototype)
 								   afterPatch(
 										 component._owner.type.prototype,
 										 "GetSections",
 										 (_: Record<string, unknown>[], ret3: Set<string>) => {
 											 if (state.managers.achievementManager.isReady(overview.appid)) ret3.add("achievements");
 											 else ret3.delete("achievements");
+											 logger.debug(`${overview.appid} Sections: `, ret3)
 											 return ret3;
 										 }
 								   );
@@ -143,6 +180,18 @@ export default definePlugin(function (serverAPI: ServerAPI) {
 							   }
 						   }
 						   return component;
+					   });
+					   lifetimeHook = SteamClient.GameSessions.RegisterForAppLifetimeNotifications((update: {
+						   unAppID: number
+						   nInstanceID: number
+						   bRunning: boolean
+					   }) => {
+						   logger.debug("lifetime", update)
+						   if ((appStore.GetAppOverviewByAppID(update.unAppID) as SteamAppOverview).app_type == 1073741824)
+						   {
+							   state.managers.achievementManager.clearCacheForAppId(update.unAppID)
+							   state.managers.achievementManager.fetchAchievements(update.unAppID)
+						   }
 					   });
 					   await state.init();
 				   }
@@ -155,7 +204,9 @@ export default definePlugin(function (serverAPI: ServerAPI) {
 					   myPatch?.unpatch();
 					   globalPatch?.unpatch();
 					   storeCategoryPatch?.unpatch();
+					   achievementsPatch?.unpatch();
 					   sectionPatch?.unpatch();
+					   lifetimeHook?.unregister()
 					   await state.deinit();
 				   })().catch(err => logger.error("Error while deinitializing plugin", err));
 			   }

@@ -1,19 +1,19 @@
 import React, {ReactElement} from "react";
 import {AppDetails} from "decky-frontend-lib";
-import {AppAchievement, Hook} from "./SteamClient";
+import {ObservableMap} from "mobx";
 
 type AllAchievements =
 	   {
 		   loading?: boolean
 		   data?: {
 			   achieved: {
-				   [key: string]: AppAchievement
+				   [key: string]: SteamAppAchievement
 			   },
 			   hidden: {
-				   [key: string]: AppAchievement
+				   [key: string]: SteamAppAchievement
 			   },
 			   unachieved: {
-				   [key: string]: AppAchievement
+				   [key: string]: SteamAppAchievement
 			   },
 		   }
 	   }
@@ -272,9 +272,24 @@ type CollectionStore = {
 	allAppsCollection: SteamCollection,
 	deckDesktopApps: SteamCollection;
 }
+interface AppData
+{
+	"details": SteamAppDetails,
+	"socialMediaData": null,
+	"associationData": null,
+	"appDetailsSpotlight": null,
+	"descriptionsData": null,
+	"screenshots": null,
+	"customImageInfoRtime": number,
+	"cRegistered": 0,
+	"listeners": [],
+	"hAppDetails": {},
+	"bLoadingAchievments": boolean
+}
 
 type AppDetailsStore = {
-	RegisterForAppData: (app_id: number, handler: (details: AppDetails) => void) => { unregister: () => void }
+	RegisterForAppData: (app_id: number, handler: (details: AppDetails) => void) => { unregister: () => void },
+	m_mapAppData: ObservableMap<number, AppData>
 }
 
 type UIStore = {

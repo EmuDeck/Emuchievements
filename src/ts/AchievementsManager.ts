@@ -1,17 +1,15 @@
 import {ServerAPI, sleep} from "decky-frontend-lib";
-import {retroAchievementToSteamAchievement} from "./Mappers";
+import {rawGameToGame, retroAchievementToSteamAchievement} from "./Mappers";
 import localforage from "localforage";
-import {AchievementsData, Game, GetGameInfoAndUserProgressParams} from "./interfaces";
-import {runInAction} from "mobx";
+import {AchievementsData, GameRaw} from "./interfaces";
+// import {reaction, runInAction} from "mobx";
 import Logger from "./logger";
 import {EmuchievementsState} from "./hooks/achievementsContext";
+import {getAllNonSteamAppOverview, getAppDetails, hideApp, showApp} from "./steam-utils";
 import {
-	getAllNonSteamAppOverview,
-	getAppDetails,
-	hideApp,
-	showApp
-} from "./steam-utils";
-import {AllAchievements, GlobalAchievements, SteamAppDetails} from "./SteamTypes";
+	AllAchievements,
+	GlobalAchievements
+} from "./SteamTypes";
 import {Promise} from "bluebird";
 
 localforage.config({
@@ -26,8 +24,11 @@ const romRegex = "(\\/([^/\"])+)+(?!\\.AppImage)(\\.zip|\\.7z|\\.iso|\\.bin|\\.c
 export interface Manager
 {
 	state: EmuchievementsState,
+
 	init(): Promise<void>,
+
 	deinit(): Promise<void>,
+
 	refresh(): Promise<void>
 }
 
@@ -92,17 +93,20 @@ export class AchievementManager implements Manager
 		this.state.loadingData.currentGame = value;
 	}
 
-	get serverAPI(): ServerAPI {
+	get serverAPI(): ServerAPI
+	{
 		return this.state.serverAPI;
 	}
 
 	async checkOnlineStatus()
 	{
-		try {
+		try
+		{
 			const online = await this.serverAPI.fetchNoCors<{ body: string; status: number }>("https://example.com");
 			this.logger.debug(online)
 			return online.success && online.result.status >= 200 && online.result.status < 300; // either true or false
-		} catch (err) {
+		} catch (err)
+		{
 			return false; // definitely offline
 		}
 	}
@@ -144,6 +148,14 @@ export class AchievementManager implements Manager
 		this.hashes = {};
 	};
 
+	public clearCacheForAppId(appId: number)
+	{
+		localforage.removeItem(String(appId));
+		delete this.achievements[appId]
+		delete this.loading[appId]
+		delete this.hashes[appId]
+	}
+
 	public async getCache(appId: string): Promise<AchievementsData | null>
 	{
 		return await localforage.getItem<AchievementsData>(appId);
@@ -161,6 +173,8 @@ export class AchievementManager implements Manager
 	public async getAchievementsForGame(app_id: number): Promise<AchievementsData | undefined>
 	{
 		return new Promise<AchievementsData | undefined>(async (resolve, reject) => {
+			const settings = await this.state.settings.readSettings()
+			this.logger.debug(`${app_id} auth: `, settings.username, settings.api_key)
 			const cache = await this.getCache(`${app_id}`);
 			this.logger.debug(`${app_id} cache: `, cache)
 			if (cache && !await this.needCacheUpdate(cache.last_updated_at, `${app_id}`))
@@ -190,31 +204,52 @@ export class AchievementManager implements Manager
 							}))
 							if (response.success)
 							{
+								if (response.result.status == 429)
+								{
+									await sleep(3);
+									resolve(await this.getAchievementsForGame(app_id));
+								}
 								if (response.result.status == 200)
 								{
 									const game_id: number = (JSON.parse(response.result.body) as { Success: boolean, GameID: number }).GameID;
 									if (game_id !== 0)
 									{
 										this.logger.debug(`${app_id} game_id: `, game_id)
-										const achievement = (await this.serverAPI.callPluginMethod<GetGameInfoAndUserProgressParams, Game>("GetGameInfoAndUserProgress", {
-											game_id
-										}));
-										this.logger.debug(`${app_id} game: `, achievement.result)
-
-										if (achievement.success)
+										const gameResponse = await this.serverAPI.fetchNoCors<{ body: string; status: number }>(`https://retroachievements.org/API/API_GetGameInfoAndUserProgress.php?z=${settings.username}&y=${settings.api_key}&u=${settings.username}&g=${game_id}`)
+										this.logger.debug(`gameResponse: ${JSON.stringify(gameResponse, undefined, "\t")}`);
+										if (gameResponse.success)
 										{
-											const result: AchievementsData = {
-												game_id: game_id,
-												game: achievement.result,
-												md5: md5.result,
-												last_updated_at: new Date()
+											if (gameResponse.result.status == 429)
+											{
+												await sleep(3);
+												resolve(await this.getAchievementsForGame(app_id));
 											}
-											await this.updateCache(`${app_id}`, result);
-											this.logger.debug(`${app_id} result:`, result)
-											resolve(result);
-										} else reject(new Error(achievement.result));
+											if (gameResponse.result.status == 200)
+											{
+												const game = (JSON.parse(gameResponse.result.body)) as GameRaw
+
+												this.logger.debug(`${app_id} game: `, game)
+
+												const result: AchievementsData = {
+													game_id: game_id,
+													game: rawGameToGame(game),
+													md5: md5.result,
+													last_updated_at: new Date()
+												}
+												await this.updateCache(`${app_id}`, result);
+												this.logger.debug(`${app_id} result:`, result)
+												resolve(result);
+											} else
+											{
+												reject(new Error(`${gameResponse.result.status}`));
+											}
+										} else reject(new Error(gameResponse.result));
 									} else resolve(undefined);
-								} else this.logger.debug(`response: ${JSON.stringify(response, undefined, "\t")}`); reject(new Error(`${response.result.status}`));
+								} else
+								{
+									this.logger.debug(`response: ${JSON.stringify(response, undefined, "\t")}`);
+									reject(new Error(`${response.result.status}`));
+								}
 							} else reject(new Error(response.result));
 						} else reject(new Error(md5.result));
 					} else resolve(undefined);
@@ -222,6 +257,7 @@ export class AchievementManager implements Manager
 			}
 		});
 	}
+
 
 	fetchAchievements(app_id: number): { all: AllAchievements, global: GlobalAchievements, md5: string | undefined }
 	{
@@ -316,10 +352,10 @@ export class AchievementManager implements Manager
 			const achieved = Object.keys(achievements.achieved).length;
 			const total = Object.keys(achievements.achieved).length + Object.keys(achievements.unachieved).length;
 			return {
-                    achieved,
-                    total,
+				achieved,
+				total,
 				percentage: (achieved / total) * 100
-               }
+			}
 		}
 		return
 	}
@@ -343,6 +379,7 @@ export class AchievementManager implements Manager
 						data: {},
 						loading: false
 					}
+					this.logger.debug(`${app_id} Retro: `, retro)
 					if (retro && retro.game.achievements)
 					{
 						retro.game.achievements.forEach(achievement => {
@@ -358,6 +395,7 @@ export class AchievementManager implements Manager
 								globalAchievements.data[steam.strID] = (((achievement.num_awarded ? achievement.num_awarded : 0) / (retro.game.num_distinct_players_casual ? retro.game.num_distinct_players_casual : 1)) * 100.0)
 							}
 						})
+						this.logger.debug(`${app_id} Achievements: `, achievements)
 						return {
 							all: achievements,
 							global: globalAchievements,
@@ -368,7 +406,7 @@ export class AchievementManager implements Manager
 				}).then(value => {
 					if (value)
 					{
-						if(value.md5) (this.hashes)[app_id] = value.md5;
+						if (value.md5) (this.hashes)[app_id] = value.md5;
 						(this.achievements)[app_id] = value.all;
 						(this.globalAchievements)[app_id] = value.global;
 					}
@@ -389,17 +427,29 @@ export class AchievementManager implements Manager
 
 	async refresh_achievements(): Promise<void>
 	{
-		this.clearCache();
-		await this.refresh_achievements_for_apps((await getAllNonSteamAppOverview()).sort((a, b) => {
+		if (await this.state.loggedIn)
+		{
+			this.clearCache();
+			await this.refresh_achievements_for_apps((await getAllNonSteamAppOverview()).sort((a, b) => {
 
-			if (a.display_name < b.display_name) {
-				return -1;
-			}
-			if (a.display_name > b.display_name) {
-				return 1;
-			}
-			return 0;
-		}).map(overview => overview.appid))
+				if (a.display_name < b.display_name)
+				{
+					return -1;
+				}
+				if (a.display_name > b.display_name)
+				{
+					return 1;
+				}
+				return 0;
+			}).map(overview => overview.appid))
+		} else
+		{
+			this.serverAPI.toaster.toast({
+				title: "Emuchievements",
+				body: "You are not logged in! Please login to view achievements.",
+			})
+		}
+
 	}
 
 	async refresh_achievements_for_apps(app_ids: number[]): Promise<void>
@@ -420,11 +470,10 @@ export class AchievementManager implements Manager
 		const details = await getAppDetails(app_id)
 		if (details)
 		{
-			const numberOfAchievements = await this.set_achievements_for_details(app_id, details)
+			const numberOfAchievements = await this.count_achievements_for_app(app_id)
 			this.currentGame = `${(`${overview.display_name} ` ?? "")}: ${numberOfAchievements.numberOfAchievements !== 0 ? `loaded ${numberOfAchievements.numberOfAchievements}, hash: ${numberOfAchievements.hash}` : "no achievements found"}`;
 			this.processed++;
-		}
-		else
+		} else
 		{
 			this.currentGame = `${(`${overview.display_name} ` ?? "")}: no achievements found`;
 			this.processed++;
@@ -432,38 +481,23 @@ export class AchievementManager implements Manager
 		this.logger.debug(`loading achievements: ${this.state.loadingData.percentage}% done`, app_id, details, overview)
 	}
 
-	async set_achievements_for_details(app_id: number, details: SteamAppDetails): Promise<{ numberOfAchievements: number, hash: string }>
+	async count_achievements_for_app(app_id: number): Promise<{ numberOfAchievements: number, hash: string }>
 	{
 		let numberOfAchievements = 0;
 		if (await this.fetchAchievementsAsync(app_id))
 		{
 			this.logger.debug(app_id, this.achievements)
 
-			if (details)
-			{
-				if (!!this.achievements[app_id] && !!details)
+
+				if (!!this.achievements[app_id])
 				{
 					const ret = this.achievements[app_id]?.data
 					if (!!ret)
 					{
-						this.logger.debug(details, ret)
-						runInAction(() => {
-							details.achievements.nAchieved = Object.keys(ret.achieved).length;
-							numberOfAchievements = Object.keys(ret.achieved).length + Object.keys(ret.unachieved).length;
-							details.achievements.nTotal = numberOfAchievements
-							details.achievements.vecHighlight = [];
-							Object.entries(ret.achieved).forEach(([, value]) => {
-								details.achievements.vecHighlight.push(value)
-							});
-							details.achievements.vecUnachieved = [];
-							Object.entries(ret.unachieved).forEach(([, value]) => {
-								details.achievements.vecUnachieved.push(value)
-							});
-						});
+						numberOfAchievements = Object.keys(ret.achieved).length + Object.keys(ret.unachieved).length;
 
 					}
 				}
-			}
 
 		}
 		return {
@@ -475,27 +509,25 @@ export class AchievementManager implements Manager
 	async refresh_shortcuts(): Promise<void>
 	{
 		const shortcuts = await getAllNonSteamAppOverview();
-		const hidden = await this.serverAPI.callPluginMethod<{}, boolean>("isHidden", {});
+		const hidden = this.state.settings.hidden;
 		this.logger.debug("hidden: ", hidden);
 		let app_ids: number[] = shortcuts.map(shortcut => shortcut.appid).filter(appid => this.isReady(appid));
 		for (const app_id of app_ids)
 		{
 			await showApp(app_id);
 		}
-		if (hidden.success)
+
+		if (hidden)
 		{
-			if (hidden.result)
+			for (const app_id of app_ids)
 			{
-				for (const app_id of app_ids)
-				{
-					await hideApp(app_id);
-				}
-			} else
+				await hideApp(app_id);
+			}
+		} else
+		{
+			for (const app_id of app_ids)
 			{
-				for (const app_id of app_ids)
-				{
-					await showApp(app_id);
-				}
+				await showApp(app_id);
 			}
 		}
 	}
@@ -517,7 +549,7 @@ export class AchievementManager implements Manager
 
 	isReady(steamAppId: number): boolean
 	{
-		this.logger.debug("isReady", steamAppId, this.achievements[steamAppId])
+		// this.logger.debug("isReady", steamAppId, this.achievements[steamAppId])
 		return !!this.achievements[steamAppId] && !this.achievements[steamAppId].loading;
 	}
 }
