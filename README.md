@@ -1,5 +1,7 @@
 # Emuchievements [![Crowdin](https://badges.crowdin.net/emuchievements/localized.svg)](https://crowdin.com/project/emuchievements)
 
+Decky Loader Steam Deck Plugin for viewing RetroAchievements progress.
+
 ## Building
 
 ```bash
