@@ -272,13 +272,28 @@ type CollectionStore = {
 	allAppsCollection: SteamCollection,
 	deckDesktopApps: SteamCollection;
 }
-interface AppData
-{
+type AppData = {
 	"details": SteamAppDetails,
-	"socialMediaData": null,
-	"associationData": null,
+	"socialMediaData": any,
+	"associationData": {
+		rgDevelopers: {
+			strName: string,
+			strURL: string
+		}[],
+		rgPublishers: {
+			strName: string,
+			strURL: string
+		}[]
+		rgFranchises: {
+			strName: string,
+			strURL: string
+		}[]
+	},
 	"appDetailsSpotlight": null,
-	"descriptionsData": null,
+	"descriptionsData": {
+		strFullDescription: ReactNode,
+		strSnippet: ReactNode
+	},
 	"screenshots": null,
 	"customImageInfoRtime": number,
 	"cRegistered": 0,
@@ -288,8 +303,11 @@ interface AppData
 }
 
 type AppDetailsStore = {
-	RegisterForAppData: (app_id: number, handler: (details: AppDetails) => void) => { unregister: () => void },
+	RegisterForAppData: (app_id: number, handler: (details: SteamAppDetails) => void) => { unregister: () => void },
 	m_mapAppData: ObservableMap<number, AppData>
+	GetAppDetails(app_id: number): SteamAppDetails;
+	GetAppData(app_id: number): AppData;
+
 }
 
 type UIStore = {

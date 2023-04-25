@@ -1,7 +1,9 @@
 import React, {
+	FunctionComponent,
+	useContext,
+	useRef,
 	VFC
 } from "react";
-import {APIProps} from "../interfaces";
 import {
 	ButtonItem,
 	Field,
@@ -11,17 +13,54 @@ import {
 	TextField,
 	ToggleField,
 	SteamSpinner,
-    Navigation
+	Navigation
 } from "decky-frontend-lib";
 import {hideApp, showApp} from "../steam-utils";
-import {EmuchievementsStateContextConsumer} from "../hooks/achievementsContext";
+import {EmuchievementsStateContext} from "../hooks/achievementsContext";
+import { ReactMarkdown, ReactMarkdownOptions } from "react-markdown/lib/react-markdown";
+import remarkGfm from "remark-gfm";
+import {useTranslations} from "../useTranslations";
 
-const GeneralSettings: VFC<APIProps> = ({serverAPI}) => {
+interface MarkdownProps extends ReactMarkdownOptions {
+	onDismiss?: () => void;
+}
 
+const Markdown: FunctionComponent<MarkdownProps> = (props) => {
 	return (
-		   <EmuchievementsStateContextConsumer>
-			   {({loadingData, apps, loggedIn, login, settings}) => {
-				   return <div style={{
+		   <Focusable>
+			   <ReactMarkdown
+					 remarkPlugins={[remarkGfm]}
+					 components={{
+						 div: (nodeProps) => <Focusable {...nodeProps.node.properties}>{nodeProps.children}</Focusable>,
+						 a: (nodeProps) => {
+							 const aRef = useRef<HTMLAnchorElement>(null);
+							 return (
+								    // TODO fix focus ring
+								    <Focusable
+										  onActivate={() => {}}
+										  onOKButton={() => {
+											  props.onDismiss?.();
+											  Navigation.NavigateToExternalWeb(aRef.current!.href);
+										  }}
+										  style={{ display: 'inline' }}
+								    >
+									    <a ref={aRef} {...nodeProps.node.properties}>
+										    {nodeProps.children}
+									    </a>
+								    </Focusable>
+							 );
+						 },
+					 }}
+					 {...props}
+			   >{props.children}</ReactMarkdown>
+		   </Focusable>
+	);
+};
+
+const GeneralSettings: VFC = () => {
+	const t = useTranslations()
+	const {serverAPI, loadingData, apps, loggedIn, login, settings} = useContext(EmuchievementsStateContext);
+	return ( <div style={{
 					   marginTop: '40px',
 					   height: 'calc( 100% - 40px )',
 				   }}>
@@ -29,9 +68,9 @@ const GeneralSettings: VFC<APIProps> = ({serverAPI}) => {
 								 <SteamSpinner/>
 							 </PanelSectionRow> :
 							 <>
-								 <PanelSection title="Apps">
+								 <PanelSection title={t("settingsApps")}>
 									 <PanelSectionRow>
-										 <Field label={"Hide Shortcuts"}>
+										 <Field label={t("settingsHideShortcuts")}>
 											 <ToggleField checked={settings.hidden} onChange={async checked => {
 												 settings.hidden = checked
 												 await serverAPI.callPluginMethod<{ hidden: boolean }, {}>("Hidden", {hidden: checked})
@@ -50,19 +89,21 @@ const GeneralSettings: VFC<APIProps> = ({serverAPI}) => {
 										 </Field>
 									 </PanelSectionRow>
 								 </PanelSection>
-								 <PanelSection title="RetroAchievements Login: ">
+								 <PanelSection title={t("settingsRetroAchievements")}>
 									 <PanelSectionRow>
-										 <Field label={"Instructions"}>
-											 To get your api key, go to <Focusable onActivate={() => {Navigation.NavigateToExternalWeb("https://retroachievements.org/controlpanel.php")}}><a href="https://retroachievements.org/controlpanel.php">https://retroachievements.org/controlpanel.php</a></Focusable> and log in to your account. you should see your api key in one of the entries in that page. either type it out in the api key box below or go to desktop mode and start steam in big picture mode so that you have access to the clipboard and paste it in.
+										 <Field label={t("settingsInstructions")}>
+											 <Markdown>
+												 {t("settingsInstructionsMD")}
+											 </Markdown>
 										 </Field>
 									 </PanelSectionRow>
 									 <Focusable>
-										 <TextField label="Username: " value={settings.username}
-												  onChange={e => settings.username = e?.target?.value}/>
+										 <TextField label={t("settingsUsername")} value={settings.username}
+												  onChange={({target: {value}}) => settings.username = value}/>
 									 </Focusable>
 									 <Focusable>
-										 <TextField label="Api Key: " value={settings.api_key}
-												  onChange={e => settings.api_key = e?.target?.value}/>
+										 <TextField label={t("settingsAPIKey")} value={settings.api_key}
+												  onChange={({target: {value}}) => settings.api_key = value}/>
 									 </Focusable>
 									 <ButtonItem onClick={
 										 async () => {
@@ -71,8 +112,8 @@ const GeneralSettings: VFC<APIProps> = ({serverAPI}) => {
 												 api_key: settings.api_key,
 											 })
 											 serverAPI.toaster.toast({
-												 title: "Emuchievements",
-												 body: `Login ${await loggedIn ? "Success" : "Failed"}`
+												 title: t("title"),
+												 body: await loggedIn ? t("loginSuccess") : t("loginFailed")
 											 })
 										 }}>
 										 Login
@@ -81,20 +122,16 @@ const GeneralSettings: VFC<APIProps> = ({serverAPI}) => {
 							 </>
 					   }
 				   </div>
-			   }}
-		   </EmuchievementsStateContextConsumer>
 	)
 }
 
 export const SettingsComponent: VFC = () => {
-	return <EmuchievementsStateContextConsumer>
-		{({serverAPI}) =>
-			   <SidebarNavigation title="Emuchievements Settings" showTitle pages={[
-				   {
-					   title: 'General',
-					   content: <GeneralSettings serverAPI={serverAPI} />,
-					   route: '/emuchievements/settings/general',
-				   }
-			   ]}/>}
-	</EmuchievementsStateContextConsumer>;
+	const t = useTranslations()
+	return <SidebarNavigation title={t("settingsTitle")} showTitle pages={[
+		{
+			title: t("settingsGeneral"),
+			content: <GeneralSettings/>,
+			route: '/general',
+		}
+   	]}/>;
 }

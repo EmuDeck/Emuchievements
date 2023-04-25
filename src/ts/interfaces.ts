@@ -1,4 +1,3 @@
-import {ServerAPI} from "decky-frontend-lib";
 
 export enum StoreCategory
 {
@@ -23,10 +22,6 @@ export enum StoreCategory
 	HighQualitySoundtrackAudio = 50
 }
 
-export interface APIProps
-{
-	serverAPI: ServerAPI
-}
 
 export interface Achievement
 {

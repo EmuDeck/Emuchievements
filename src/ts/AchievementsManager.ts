@@ -11,6 +11,7 @@ import {
 	GlobalAchievements
 } from "./SteamTypes";
 import {Promise} from "bluebird";
+import { runInAction } from "mobx";
 
 localforage.config({
 	name: "emuchievements",
@@ -219,7 +220,7 @@ export class AchievementManager implements Manager
 										this.logger.debug(`gameResponse: ${JSON.stringify(gameResponse, undefined, "\t")}`);
 										if (gameResponse.success)
 										{
-											if (gameResponse.result.status == 429)
+											if (gameResponse.result.status == 429 || gameResponse.result.status == 504)
 											{
 												await sleep(3);
 												resolve(await this.getAchievementsForGame(app_id));
@@ -495,7 +496,27 @@ export class AchievementManager implements Manager
 					if (!!ret)
 					{
 						numberOfAchievements = Object.keys(ret.achieved).length + Object.keys(ret.unachieved).length;
-
+						const nAchieved = Object.keys(ret.achieved).length;
+						const nTotal = Object.keys(ret.achieved).length + Object.keys(ret.unachieved).length;
+						runInAction(() => {
+							appAchievementProgressCache.m_achievementProgress.mapCache.set(app_id, {
+								all_unlocked: nAchieved === nTotal,
+								appid: app_id,
+								cache_time: new Date().getTime(),
+								percentage: (nAchieved / nTotal) * 100,
+								total: nTotal,
+								unlocked: nAchieved
+							});
+							appAchievementProgressCache.SaveCacheFile()
+							this.logger.debug(`achievementsCache: `, {
+								all_unlocked: nAchieved === nTotal,
+								appid: app_id,
+								cache_time: new Date().getTime(),
+								percentage: (nAchieved / nTotal) * 100,
+								total: nTotal,
+								unlocked: nAchieved
+							}, appAchievementProgressCache.m_achievementProgress.mapCache.get(app_id))
+						})
 					}
 				}
 

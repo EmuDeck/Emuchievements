@@ -30,7 +30,7 @@ export const EmuchievementsComponent: VFC = () =>
 							 <PanelSectionRow>
 								 <ButtonItem onClick={() => {
 									 Navigation.CloseSideMenus()
-									 Navigation.Navigate("/emuchievements/settings")
+									 Navigation.Navigate("/emuchievements/settings/test*")
 								 }}>
 									 Settings
 								 </ButtonItem>

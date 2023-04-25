@@ -1,32 +1,6 @@
 import {ServerAPI} from "decky-frontend-lib";
 import {EmuchievementsState} from "./hooks/achievementsContext";
 
-interface GetSettingArgs<T> {
-	key: string;
-	default: T;
-}
-
-interface SetSettingArgs<T> {
-	key: string;
-	value: T;
-}
-
-export async function getSetting<T>(key: string, def: T, serverAPI: ServerAPI): Promise<T>
-{
-	const res = (await serverAPI.callPluginMethod('getSetting', {
-		key,
-		default: def,
-	} as GetSettingArgs<T>)) as { result: T };
-	return res.result;
-}
-
-export async function setSetting<T>(key: string, value: T, serverAPI: ServerAPI): Promise<void> {
-	await serverAPI.callPluginMethod('setSetting', {
-		key,
-		value,
-	} as SetSettingArgs<T>);
-}
-
 export type SettingsData = {
 	username: string,
 	api_key: string,
@@ -93,6 +67,6 @@ export class Settings {
 	}
 
 	private writeChange(key: keyof SettingsData, value: any) {
-		this.serverAPI.callPluginMethod<any, SettingsData>("set_config_value", {key: key, value: value});
+		void this.serverAPI.callPluginMethod<any, SettingsData>("set_config_value", {key: key, value: value});
 	}
 }

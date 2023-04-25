@@ -217,7 +217,7 @@ export class EmuchievementsState
 	}
 }
 
-const EmuchievementsStateContext = createContext<EmuchievementsStateContext>(null as any);
+export const EmuchievementsStateContext = createContext<EmuchievementsStateContext>(null as any);
 
 export const useEmuchievementsState = () => useContext(EmuchievementsStateContext);
 

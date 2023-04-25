@@ -1,9 +1,4 @@
-import {findModuleChild, sleep} from "decky-frontend-lib";
-
-interface LibraryInitializer {
-	WaitForServicesInitialized: () => Promise<boolean>;
-}
-
+import {sleep} from "decky-frontend-lib";
 export function registerForLoginStateChange(onLogin: (username: string) => void, onLogout: () => void): () => void {
 	try {
 		let isLoggedIn: boolean | null = null;
@@ -53,31 +48,11 @@ export async function waitForPredicate(retries: number, delay: number, predicate
 
 	return await waitImpl();
 }
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-const LibraryInitializer = findModuleChild((mod: { [key: string]: Partial<LibraryInitializer> }): unknown => {
-	if (typeof mod !== "object") {
-		return undefined;
-	}
-
-	for (const prop in mod) {
-		if (mod[prop]?.WaitForServicesInitialized) {
-			return mod[prop];
-		}
-	}
-
-	return undefined;
-}) as LibraryInitializer;
 
 /**
  * Waits until the services are initialized.
  */
 export async function waitForServicesInitialized(): Promise<boolean> {
-	// This is for stable
-	if (LibraryInitializer != null) {
-		return await LibraryInitializer.WaitForServicesInitialized();
-	}
-
-	// This is for beta
 	type WindowEx = Window & { App?: { WaitForServicesInitialized?: () => Promise<boolean> } };
 	await waitForPredicate(20, 250, () => (window as WindowEx).App?.WaitForServicesInitialized != null);
 
