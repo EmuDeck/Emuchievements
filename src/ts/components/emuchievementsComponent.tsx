@@ -12,9 +12,11 @@ import {
 import {useEmuchievementsState} from "../hooks/achievementsContext";
 import {FaSync} from "react-icons/fa";
 import Logger from "../logger";
+import {useTranslations} from "../useTranslations";
 
 export const EmuchievementsComponent: VFC = () =>
 {
+	const t = useTranslations()
 	const logger = new Logger("EmuchievementsComponent");
 	const {apps, loadingData, managers: {achievementManager}, refresh} = useEmuchievementsState()
 	const [appIds, setAppIds] = useState<number[]>()
@@ -32,13 +34,13 @@ export const EmuchievementsComponent: VFC = () =>
 									 Navigation.CloseSideMenus()
 									 Navigation.Navigate("/emuchievements/settings/test*")
 								 }}>
-									 Settings
+									 {t("settings")}
 								 </ButtonItem>
 							 </PanelSectionRow>
 							 <PanelSectionRow>
 								 <ProgressBarWithInfo
 									    nProgress={loadingData.percentage}
-									    label="Loading"
+									    label={t("loading")}
 									    description={`${loadingData.processed}/${loadingData.total}`}
 									    sOperationText={loadingData.currentGame}
 								 />
@@ -50,13 +52,13 @@ export const EmuchievementsComponent: VFC = () =>
 									 Navigation.CloseSideMenus()
 									 Navigation.Navigate("/emuchievements/settings")
 								 }}>
-									 Settings
+									 {t("settings")}
 								 </ButtonItem>
 							 </PanelSectionRow>
 							 <PanelSectionRow>
 								 <ButtonItem
 									    onClick={() => void refresh()}
-								 ><FaSync/> Refresh</ButtonItem>
+								 ><FaSync/> {t("refresh")}</ButtonItem>
 							 </PanelSectionRow>
 							 {
 								 (() => {

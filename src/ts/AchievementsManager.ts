@@ -12,6 +12,7 @@ import {
 } from "./SteamTypes";
 import {Promise} from "bluebird";
 import { runInAction } from "mobx";
+import {format, getTranslateFunc} from "./useTranslations";
 
 localforage.config({
 	name: "emuchievements",
@@ -42,6 +43,8 @@ export interface AchievementsProgress
 
 export class AchievementManager implements Manager
 {
+	private t = getTranslateFunc()
+
 	private _state: EmuchievementsState;
 
 	get state(): EmuchievementsState
@@ -446,8 +449,8 @@ export class AchievementManager implements Manager
 		} else
 		{
 			this.serverAPI.toaster.toast({
-				title: "Emuchievements",
-				body: "You are not logged in! Please login to view achievements.",
+				title: this.t("title"),
+				body: this.t("noLogin"),
 			})
 		}
 
@@ -472,11 +475,11 @@ export class AchievementManager implements Manager
 		if (details)
 		{
 			const numberOfAchievements = await this.count_achievements_for_app(app_id)
-			this.currentGame = `${(`${overview.display_name} ` ?? "")}: ${numberOfAchievements.numberOfAchievements !== 0 ? `loaded ${numberOfAchievements.numberOfAchievements}, hash: ${numberOfAchievements.hash}` : "no achievements found"}`;
+			this.currentGame = format(this.t("currentGame"), overview.display_name, numberOfAchievements.numberOfAchievements !== 0 ? format(this.t("foundAchievements"), numberOfAchievements.numberOfAchievements, numberOfAchievements.hash) : this.t("noAchievements"));
 			this.processed++;
 		} else
 		{
-			this.currentGame = `${(`${overview.display_name} ` ?? "")}: no achievements found`;
+			this.currentGame = format(this.t("currentGame"), overview.display_name, this.t("noAchievements"));
 			this.processed++;
 		}
 		this.logger.debug(`loading achievements: ${this.state.loadingData.percentage}% done`, app_id, details, overview)

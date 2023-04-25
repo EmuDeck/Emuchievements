@@ -5,6 +5,7 @@ import {getAllNonSteamAppOverview} from "../steam-utils";
 import {Promise} from "bluebird";
 import {Login} from "../interfaces";
 import {Settings} from "../settings";
+import {getTranslateFunc} from "../useTranslations";
 
 interface LoadingData
 {
@@ -36,10 +37,12 @@ interface EmuchievementsStateContext
 	login(login: Login): Promise<void>
 }
 
+
 export class EmuchievementsState
 {
 	private _loadingData: LoadingData = new class implements LoadingData
 	{
+		private t = getTranslateFunc()
 		private state: EmuchievementsState;
 
 		constructor(outer: EmuchievementsState)
@@ -89,7 +92,7 @@ export class EmuchievementsState
 			this.state.notifyUpdate();
 		}
 
-		private _currentGame = "fetching";
+		private _currentGame = this.t("fetching");
 		get currentGame(): string
 		{
 			return this._currentGame;
