@@ -10,5 +10,13 @@
 	"settingsAPIKey": "Api Key: ",
 	"loginSuccess": "Login Success",
 	"loginFailed": "Login Failed",
-	"title": "Emuchievements"
+	"title": "Emuchievements",
+	"settings": "Settings",
+	"refresh": "Refresh",
+	"loading": "Loading",
+	"fetching": "Fetching",
+	"noAchievements": "No Achievements Found",
+	"foundAchievements": "Loaded %%, Hash: %%",
+	"currentGame": "%%: %%",
+	"noLogin": "You are not logged in! Please login to view achievements."
 }
