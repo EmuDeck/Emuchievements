@@ -1,6 +1,4 @@
-# Emuchievements 
-
-[![Crowdin](https://badges.crowdin.net/emuchievements/localized.svg)](https://crowdin.com/project/emuchievements)
+# Emuchievements [![Crowdin](https://badges.crowdin.net/emuchievements/localized.svg)](https://crowdin.com/project/emuchievements)
 
 ## Building
 
