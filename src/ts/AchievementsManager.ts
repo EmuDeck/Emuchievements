@@ -211,12 +211,12 @@ export class AchievementManager implements Manager
 								}))
 								if (response.success)
 								{
-									// if (response.result.status == 429 || response.result.status == 504)
-									// {
-									// 	await sleep(3);
-									// 	await gameid();
-									// }
-									if (response.result.status == 200)
+									if (response.result.status == 429 || response.result.status == 504)
+									{
+										await sleep(3);
+										await gameid();
+									}
+									else if (response.result.status == 200)
 									{
 										const game_id: number = (JSON.parse(response.result.body) as { Success: boolean, GameID: number }).GameID;
 										if (game_id !== 0)
@@ -231,12 +231,12 @@ export class AchievementManager implements Manager
 												this.logger.debug(`gameResponse: ${JSON.stringify(gameResponse, undefined, "\t")}`);
 												if (gameResponse.success)
 												{
-													// if (gameResponse.result.status == 429 || gameResponse.result.status == 504)
-													// {
-													// 	await sleep(3);
-													// 	await game();
-													// }
-													if (gameResponse.result.status == 200)
+													if (gameResponse.result.status == 429 || gameResponse.result.status == 504)
+													{
+														await sleep(3);
+														await game();
+													}
+													else if (gameResponse.result.status == 200)
 													{
 														const game = (JSON.parse(gameResponse.result.body)) as GameRaw
 
