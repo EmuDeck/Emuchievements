@@ -5,8 +5,8 @@ dependencies:
     specifier: ^3.7.2
     version: 3.7.2
   decky-frontend-lib:
-    specifier: ^3.20.5
-    version: 3.20.5
+    specifier: ^3.21.0
+    version: 3.21.0
   localforage:
     specifier: ^1.10.0
     version: 1.10.0
@@ -22,6 +22,9 @@ dependencies:
   remark-gfm:
     specifier: ^3.0.1
     version: 3.0.1
+  throttled-queue:
+    specifier: ^2.1.4
+    version: 2.1.4
 
 devDependencies:
   '@rollup/plugin-commonjs':
@@ -635,8 +638,8 @@ packages:
       yargs: 13.2.4
     dev: true
 
-  /decky-frontend-lib@3.20.5:
-    resolution: {integrity: sha512-aXllFYhWovoiyBHNzH8PW9EYgXotY9ysuU9icFNgrOWFotyJV+2KGLnfYEyBlDNiexKvXKVRKPw1gRFX2hP4AQ==}
+  /decky-frontend-lib@3.21.0:
+    resolution: {integrity: sha512-BZY+F9HKhjF0zthoBdQxbluZ/37UyjlzCCpcC6dQfOeAAPmjFDATs/FF/n9qo9B+NMepgWUXpStZR0becE9EOw==}
     dev: false
 
   /decode-named-character-reference@1.0.2:
@@ -1917,6 +1920,10 @@ packages:
       commander: 2.20.3
       source-map-support: 0.5.21
     dev: true
+
+  /throttled-queue@2.1.4:
+    resolution: {integrity: sha512-YGdk8sdmr4ge3g+doFj/7RLF5kLM+Mi7DEciu9PHxnMJZMeVuZeTj31g4VE7ekUffx/IdbvrtOCiz62afg0mkg==}
+    dev: false
 
   /trim-lines@3.0.1:
     resolution: {integrity: sha512-kRj8B+YHZCc9kQYdWfJB2/oUl9rA99qbowYYBtr4ui4mZyAQ2JpvVBd/6U2YloATfqBhBTSMhTpgBHtU0Mf3Rg==}

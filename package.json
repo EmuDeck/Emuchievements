@@ -51,12 +51,13 @@
 	},
 	"dependencies": {
 		"bluebird": "^3.7.2",
-		"decky-frontend-lib": "^3.20.5",
+		"decky-frontend-lib": "^3.21.0",
 		"localforage": "^1.10.0",
 		"lodash-es": "^4.17.21",
 		"react-icons": "^4.4.0",
 		"react-markdown": "^8.0.6",
-		"remark-gfm": "^3.0.1"
+		"remark-gfm": "^3.0.1",
+		"throttled-queue": "^2.1.4"
 	},
 	"pnpm": {
 		"peerDependencyRules": {

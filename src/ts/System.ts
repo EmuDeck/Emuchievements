@@ -2,7 +2,9 @@ import Logger from "./logger";
 import {SteamAppOverview} from "./SteamTypes";
 import {Promise} from "bluebird";
 import {registerForLoginStateChange, waitForServicesInitialized} from "./LibraryInitializer";
-import { Patch } from "decky-frontend-lib";
+import { Patch, ServerAPI } from "decky-frontend-lib";
+import { ComponentType } from "react";
+import { RouteProps } from "react-router";
 
 let systemClock: Clock = {
 	getTimeMs() {
@@ -27,6 +29,11 @@ export interface AsyncMountable {
      unMount(): Promise<void>
 }
 
+export interface AsyncPatchMountable
+{
+    patch(): Promise<Patch>
+}
+
 export type Events =
 	   | { type: "GameStarted", createdAt: number, game: SteamAppOverview }
 	   | { type: "GameStopped", createdAt: number, game: SteamAppOverview }
@@ -39,9 +46,11 @@ export class MountManager
 {
 	private mounts: Array<Mountable | AsyncMountable> = []
 	private logger: Logger;
+	private serverAPI: ServerAPI;
 	private eventBus: EventBus
 	private clock: Clock;
-	constructor(eventBus: EventBus, logger: Logger, clock: Clock = systemClock) {
+	constructor(eventBus: EventBus, logger: Logger, serverAPI: ServerAPI, clock: Clock = systemClock) {
+        this.serverAPI = serverAPI;
 		this.logger = logger;
 		this.eventBus = eventBus
 		this.clock = clock;
@@ -51,13 +60,31 @@ export class MountManager
 		this.mounts.push(mount)
 	}
 
-	addPatchMount(mount: PatchMountable): void {
-		let patch: Patch;
-		this.addMount({
-			mount: () => patch = mount.patch(),
-               unMount: () => patch?.unpatch()
-		})
-	}
+    addPageMount(path: string, component: ComponentType, props?: Omit<RouteProps, 'path' | 'children'>): void {
+        let self = this;
+        this.addMount({
+            mount(): void {
+                self.serverAPI.routerHook.addRoute(path, component, props)
+            },
+            unMount(): void {
+                self.serverAPI.routerHook.removeRoute(path)
+            }
+        })
+    }
+
+    addPatchMount(mount: PatchMountable | AsyncPatchMountable): void {
+        let patch: Patch;
+        this.addMount({
+            async mount()
+            {
+                return patch = (await mount.patch());
+            },
+            async unMount()
+            {
+                patch?.unpatch();
+            }
+        })
+    }
 
 	async mount() {
 		await Promise.map(this.mounts, async (mount: Mountable | AsyncMountable) => await mount.mount(), { concurrency: 1 })

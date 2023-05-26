@@ -2,7 +2,6 @@ import {ServerAPI, sleep} from "decky-frontend-lib";
 import {rawGameToGame, retroAchievementToSteamAchievement} from "./Mappers";
 import localforage from "localforage";
 import {AchievementsData, GameRaw} from "./interfaces";
-// import {reaction, runInAction} from "mobx";
 import Logger from "./logger";
 import {EmuchievementsState} from "./hooks/achievementsContext";
 import {getAllNonSteamAppOverview, getAppDetails, hideApp, showApp} from "./steam-utils";
@@ -11,8 +10,9 @@ import {
 	GlobalAchievements
 } from "./SteamTypes";
 import {Promise} from "bluebird";
-import { runInAction } from "mobx";
+import {runInAction} from "mobx";
 import {format, getTranslateFunc} from "./useTranslations";
+import throttledQueue from "throttled-queue";
 
 localforage.config({
 	name: "emuchievements",
@@ -174,6 +174,8 @@ export class AchievementManager implements Manager
 		return minutesBetweenDates > 4 || await this.getCache(appId) === null;
 	};
 
+	private throttle = throttledQueue(4, 1000, true);
+
 	public async getAchievementsForGame(app_id: number): Promise<AchievementsData | undefined>
 	{
 		return new Promise<AchievementsData | undefined>(async (resolve, reject) => {
@@ -201,64 +203,76 @@ export class AchievementManager implements Manager
 						this.logger.debug(`${app_id} md5: `, md5.result)
 						if (md5.success)
 						{
-							const response = (await this.serverAPI.fetchNoCors<{ body: string; status: number }>(`https://retroachievements.org/dorequest.php?r=gameid&m=${md5.result}`, {
-								headers: {
-									"User-Agent": `Emuchievements/${process.env.VERSION} (+https://github.com/EmuDeck/Emuchievements)`
-								}
-							}))
-							if (response.success)
-							{
-								if (response.result.status == 429)
+							const gameid = async () => {
+								const response = (await this.serverAPI.fetchNoCors<{ body: string; status: number }>(`https://retroachievements.org/dorequest.php?r=gameid&m=${md5.result}`, {
+									headers: {
+										"User-Agent": `Emuchievements/${process.env.VERSION} (+https://github.com/EmuDeck/Emuchievements)`
+									}
+								}))
+								if (response.success)
 								{
-									await sleep(3);
-									resolve(await this.getAchievementsForGame(app_id));
-								}
-								if (response.result.status == 200)
-								{
-									const game_id: number = (JSON.parse(response.result.body) as { Success: boolean, GameID: number }).GameID;
-									if (game_id !== 0)
+									// if (response.result.status == 429 || response.result.status == 504)
+									// {
+									// 	await sleep(3);
+									// 	await gameid();
+									// }
+									if (response.result.status == 200)
 									{
-										this.logger.debug(`${app_id} game_id: `, game_id)
-										const gameResponse = await this.serverAPI.fetchNoCors<{ body: string; status: number }>(`https://retroachievements.org/API/API_GetGameInfoAndUserProgress.php?z=${settings.username}&y=${settings.api_key}&u=${settings.username}&g=${game_id}`)
-										this.logger.debug(`gameResponse: ${JSON.stringify(gameResponse, undefined, "\t")}`);
-										if (gameResponse.success)
+										const game_id: number = (JSON.parse(response.result.body) as { Success: boolean, GameID: number }).GameID;
+										if (game_id !== 0)
 										{
-											if (gameResponse.result.status == 429 || gameResponse.result.status == 504)
-											{
-												await sleep(3);
-												resolve(await this.getAchievementsForGame(app_id));
-											}
-											if (gameResponse.result.status == 200)
-											{
-												const game = (JSON.parse(gameResponse.result.body)) as GameRaw
+											const game = async () => {
+												this.logger.debug(`${app_id} game_id: `, game_id)
+												const gameResponse = await this.serverAPI.fetchNoCors<{ body: string; status: number }>(`https://retroachievements.org/API/API_GetGameInfoAndUserProgress.php?z=${settings.username}&y=${settings.api_key}&u=${settings.username}&g=${game_id}`, {
+													headers: {
+														"User-Agent": `Emuchievements/${process.env.VERSION} (+https://github.com/EmuDeck/Emuchievements)`
+													}
+												})
+												this.logger.debug(`gameResponse: ${JSON.stringify(gameResponse, undefined, "\t")}`);
+												if (gameResponse.success)
+												{
+													// if (gameResponse.result.status == 429 || gameResponse.result.status == 504)
+													// {
+													// 	await sleep(3);
+													// 	await game();
+													// }
+													if (gameResponse.result.status == 200)
+													{
+														const game = (JSON.parse(gameResponse.result.body)) as GameRaw
 
-												this.logger.debug(`${app_id} game: `, game)
+														this.logger.debug(`${app_id} game: `, game)
 
-												const result: AchievementsData = {
-													game_id: game_id,
-													game: rawGameToGame(game),
-													md5: md5.result,
-													last_updated_at: new Date()
-												}
-												await this.updateCache(`${app_id}`, result);
-												this.logger.debug(`${app_id} result:`, result)
-												resolve(result);
-											} else
-											{
-												reject(new Error(`${gameResponse.result.status}`));
+														const result: AchievementsData = {
+															game_id: game_id,
+															game: rawGameToGame(game),
+															md5: md5.result,
+															last_updated_at: new Date()
+														}
+														await this.updateCache(`${app_id}`, result);
+														this.logger.debug(`${app_id} result:`, result)
+														resolve(result);
+													}
+													else
+													{
+														reject(new Error(`${gameResponse.result.status}`));
+													}
+												} else reject(new Error(gameResponse.result));
 											}
-										} else reject(new Error(gameResponse.result));
-									} else resolve(undefined);
-								} else
-								{
-									this.logger.debug(`response: ${JSON.stringify(response, undefined, "\t")}`);
-									reject(new Error(`${response.result.status}`));
-								}
-							} else reject(new Error(response.result));
+											await game();
+										} else resolve(undefined);
+									} else
+									{
+										this.logger.debug(`response: ${JSON.stringify(response, undefined, "\t")}`);
+										reject(new Error(`${response.result.status}`));
+									}
+								} else reject(new Error(response.result));
+							}
+							await gameid();
 						} else reject(new Error(md5.result));
 					} else resolve(undefined);
 				} else resolve(undefined);
-			}
+			}// import {reaction, runInAction} from "mobx";
+
 		});
 	}
 
@@ -279,7 +293,7 @@ export class AchievementManager implements Manager
 		} else if (!((((this.achievements)[app_id] === undefined) ? (this.achievements)[0] : (this.achievements)[app_id]).data))
 		{
 			(this.loading)[app_id] = true;
-			this.getAchievementsForGame(app_id).then((retro: AchievementsData | undefined): { all: AllAchievements, global: GlobalAchievements, md5: string | undefined } => {
+			this.throttle(() => this.getAchievementsForGame(app_id).then((retro: AchievementsData | undefined): { all: AllAchievements, global: GlobalAchievements, md5: string | undefined } => {
 				let achievements: AllAchievements = {
 					data: {
 						achieved: {},
@@ -327,7 +341,7 @@ export class AchievementManager implements Manager
 				(this.achievements)[app_id] = value.all;
 				(this.globalAchievements)[app_id] = value.global;
 				(this.loading)[app_id] = false;
-			});
+			}));
 			return {
 				all: {
 					loading: true,
@@ -370,7 +384,7 @@ export class AchievementManager implements Manager
 			if (!((((this.achievements)[app_id] === undefined) ? (this.achievements)[0] : (this.achievements)[app_id]).data))
 			{
 				(this.loading)[app_id] = true;
-				resolve(await this.getAchievementsForGame(app_id).then((retro: AchievementsData | undefined): { all: AllAchievements, global: GlobalAchievements, md5: string | undefined } | undefined => {
+				resolve(await this.throttle(() => this.getAchievementsForGame(app_id).then((retro: AchievementsData | undefined): { all: AllAchievements, global: GlobalAchievements, md5: string | undefined } | undefined => {
 					let achievements: AllAchievements = {
 						data: {
 							achieved: {},
@@ -417,7 +431,7 @@ export class AchievementManager implements Manager
 					(this.loading)[app_id] = false;
 
 					return value;
-				}));
+				})));
 			} else
 			{
 				resolve({
@@ -465,6 +479,8 @@ export class AchievementManager implements Manager
 			concurrency: 3
 		});
 		this.globalLoading = false;
+		this.processed = 0;
+		this.total = 0;
 	}
 
 	private async refresh_achievements_for_app(app_id: number): Promise<void>
@@ -498,6 +514,10 @@ export class AchievementManager implements Manager
 					const ret = this.achievements[app_id]?.data
 					if (!!ret)
 					{
+						if (!appAchievementProgressCache.m_achievementProgress)
+						{
+							await appAchievementProgressCache.RequestCacheUpdate()
+						}
 						numberOfAchievements = Object.keys(ret.achieved).length + Object.keys(ret.unachieved).length;
 						const nAchieved = Object.keys(ret.achieved).length;
 						const nTotal = Object.keys(ret.achieved).length + Object.keys(ret.unachieved).length;

@@ -1,6 +1,10 @@
-import React, {ReactElement} from "react";
+import React, {ReactElement, ReactNode} from "react";
 import {AppDetails} from "decky-frontend-lib";
-import {ObservableMap} from "mobx";
+import {Hook} from "./SteamClient";
+
+type Hook = {
+	unregister: () => void
+}
 
 type AllAchievements =
 	   {
@@ -33,6 +37,7 @@ type SteamAppLanguages = {
 
 import React, {ReactElement} from "react";
 import {AppDetails} from "decky-frontend-lib";
+import {StoreCategory} from "./Interfaces";
 
 type SteamShortcut = {
 	appid: number,
@@ -172,6 +177,7 @@ type SteamGameClientData = {
 }
 
 type SteamAppOverview = {
+	__proto__: SteamAppOverview,
 	app_type: number,
 	gameid: string,
 	appid: number,
@@ -251,6 +257,7 @@ type SteamTab = {
 }
 
 type SteamCollection = {
+	__proto__: SteamCollection
 	AsDeletableCollection: () => null
 	AsDragDropCollection: () => null
 	AsEditableCollection: () => null
@@ -272,6 +279,7 @@ type CollectionStore = {
 	allAppsCollection: SteamCollection,
 	deckDesktopApps: SteamCollection;
 }
+
 type AppData = {
 	"details": SteamAppDetails,
 	"socialMediaData": any,
@@ -303,11 +311,40 @@ type AppData = {
 }
 
 type AppDetailsStore = {
-	RegisterForAppData: (app_id: number, handler: (details: SteamAppDetails) => void) => { unregister: () => void },
-	m_mapAppData: ObservableMap<number, AppData>
-	GetAppDetails(app_id: number): SteamAppDetails;
+	__proto__: AppDetailsStore;
+	GetAppDetails(id: number): SteamAppDetails,
+	RegisterForAppData(app_id: any, callback: (data: SteamAppDetails) => void): Hook
+	GetAchievements(app_id: number): SteamAppAchievements;
 	GetAppData(app_id: number): AppData;
+}
 
+type AppStore = {
+	m_mapApps: ObservableMap<number, SteamAppOverview>;
+	UpdateAppOverview: any,
+	GetAppOverviewByAppID: (id: number) => SteamAppOverview,
+	GetAppOverviewByGameID: (id: string) => SteamAppOverview,
+	CompareSortAs: any,
+	allApps: SteamAppOverview[],
+	storeTagCounts: any,
+	GetTopStoreTags: any,
+	OnLocalizationChanged: any,
+	GetStoreTagLocalization: any,
+	GetLocalizationForStoreTag: any,
+	AsyncGetLocalizationForStoreTag: any,
+	sharedLibraryAccountIds: any,
+	siteLicenseApps: any,
+	GetIconURLForApp: any,
+	GetLandscapeImageURLForApp: any,
+	GetCachedLandscapeImageURLForApp: any,
+	GetVerticalCapsuleURLForApp: any,
+	GetPregeneratedVerticalCapsuleForApp: any
+	GetCachedVerticalCapsuleURL: any,
+	GetCustomImageURLs: any,
+	GetCustomVerticalCapsuleURLs: any,
+	GetCustomLandcapeImageURLs: any,
+	GetCustomHeroImageURLs: any,
+	GetCustomLogoImageURLs: any,
+	GetStorePageURLForApp: any
 }
 
 type UIStore = {

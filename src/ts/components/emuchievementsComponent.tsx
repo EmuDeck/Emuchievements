@@ -32,7 +32,7 @@ export const EmuchievementsComponent: VFC = () =>
 							 <PanelSectionRow>
 								 <ButtonItem onClick={() => {
 									 Navigation.CloseSideMenus()
-									 Navigation.Navigate("/emuchievements/settings/test*")
+									 Navigation.Navigate("/emuchievements/settings")
 								 }}>
 									 {t("settings")}
 								 </ButtonItem>
@@ -53,6 +53,14 @@ export const EmuchievementsComponent: VFC = () =>
 									 Navigation.Navigate("/emuchievements/settings")
 								 }}>
 									 {t("settings")}
+								 </ButtonItem>
+							 </PanelSectionRow>
+							 <PanelSectionRow>
+								 <ButtonItem onClick={() => {
+									 Navigation.CloseSideMenus()
+									 Navigation.Navigate("/emuchievements/achievements")
+								 }}>
+									 {t("achievements")}
 								 </ButtonItem>
 							 </PanelSectionRow>
 							 <PanelSectionRow>
