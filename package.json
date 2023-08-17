@@ -50,6 +50,7 @@
 		"typescript": "^4.7.4"
 	},
 	"dependencies": {
+		"@retroachievements/api": "^1.2.1",
 		"bluebird": "^3.7.2",
 		"decky-frontend-lib": "^3.21.0",
 		"localforage": "^1.10.0",
