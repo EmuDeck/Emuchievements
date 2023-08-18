@@ -47,9 +47,10 @@ export async function getAllNonSteamAppOverview(): Promise<SteamAppOverview[]>
 
 export async function getAppDetails(appId: number): Promise<SteamAppDetails | null>
 {
-	return await new Promise((resolve) => {
+	return new Promise((resolve) => {
 		let timeoutId: NodeJS.Timeout | undefined = undefined;
-		try {
+		try
+		{
 			const { unregister } = SteamClient.Apps.RegisterForAppDetails(appId, (details: SteamAppDetails) => {
 				clearTimeout(timeoutId);
 				unregister();
@@ -60,7 +61,8 @@ export async function getAppDetails(appId: number): Promise<SteamAppDetails | nu
 				unregister();
 				resolve(null);
 			}, 1000);
-		} catch (error) {
+		} catch (error)
+		{
 			clearTimeout(timeoutId);
 			console.error(error);
 			resolve(null);
