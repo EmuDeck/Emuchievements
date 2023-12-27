@@ -287,7 +287,7 @@ export default definePlugin(function (serverAPI: ServerAPI) {
 				{
 					if (!update.bRunning)
 					{
-						state.managers.achievementManager.clearCacheForAppId(update.unAppID)
+						state.managers.achievementManager.clearRuntimeCacheForAppId(update.unAppID)
 						state.managers.achievementManager.fetchAchievements(update.unAppID)
 					}
 				}

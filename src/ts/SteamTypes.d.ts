@@ -316,6 +316,7 @@ type AppDetailsStore = {
 	RegisterForAppData(app_id: any, callback: (data: SteamAppDetails) => void): Hook
 	GetAchievements(app_id: number): SteamAppAchievements;
 	GetAppData(app_id: number): AppData;
+	GetLogoImages(overview: SteamAppOverview): {rgLogoImages: string[]};
 }
 
 type AppStore = {

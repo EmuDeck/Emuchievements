@@ -1,7 +1,7 @@
 import {ServerAPI} from "decky-frontend-lib";
 import {createContext, FC, ReactNode, useContext, useEffect, useState} from "react";
 import {AchievementManager, Manager} from "../AchievementsManager";
-import {getAllNonSteamAppOverview} from "../steam-utils";
+import {getAllNonSteamAppIds} from "../steam-utils";
 import {Promise} from "bluebird";
 import {Login} from "../interfaces";
 import {Settings} from "../settings";
@@ -12,12 +12,16 @@ interface LoadingData
 	get percentage(): number
 	get globalLoading(): boolean,
 	set globalLoading(value: boolean),
-	get currentGame(): string,
-	set currentGame(value: string),
+	get game(): string,
+	set game(value: string),
+	get description(): string,
+	set description(value: string),
 	get processed(): number,
 	set processed(value: number),
      get total(): number,
-	set total(value: number)
+	set total(value: number),
+	get fetching(): boolean,
+	set fetching(value: boolean)
 }
 
 interface Managers
@@ -92,15 +96,39 @@ export class EmuchievementsState
 			this.state.notifyUpdate();
 		}
 
-		private _currentGame = this.t("fetching");
-		get currentGame(): string
+		private _game = this.t("fetching");
+		get game(): string
 		{
-			return this._currentGame;
+			return this._game;
 		}
 
-		set currentGame(value: string)
+		set game(value: string)
 		{
-			this._currentGame = value;
+			this._game = value;
+			this.state.notifyUpdate();
+		}
+
+		private _description = "";
+		get description(): string
+		{
+			return this._description;
+		}
+
+		set description(value: string)
+		{
+			this._description = value;
+			this.state.notifyUpdate();
+		}
+
+		private _fetching =  true;
+		get fetching(): boolean
+		{
+			return this._fetching;
+		}
+
+		set fetching(value: boolean)
+		{
+			this._fetching = value;
 			this.state.notifyUpdate();
 		}
 	}(this);
@@ -146,16 +174,7 @@ export class EmuchievementsState
 
 	get apps(): Promise<number[]>
 	{
-		return (async () => (await getAllNonSteamAppOverview()).filter((overview) => this._managers.achievementManager.isReady(overview.appid)).sort( (a, b) => {
-
-			if (a.display_name < b.display_name) {
-				return -1;
-			}
-			if (a.display_name > b.display_name) {
-				return 1;
-			}
-			return 0;
-		}).map(overview => overview.appid))();
+		return (async () => (await getAllNonSteamAppIds()).filter((appId) => this._managers.achievementManager.isReady(appId)))();
 	}
 
 	get serverAPI(): ServerAPI
@@ -174,7 +193,7 @@ export class EmuchievementsState
 			const authenticated = await this.serverAPI.fetchNoCors<{ body: string; status: number }>(`https://retroachievements.org/API/API_GetGameInfoAndUserProgress.php?z=${this.settings.username}&y=${this.settings.api_key}`)
 			if (authenticated.success)
 			{
-				return authenticated.result.body !== "Invalid API Key";
+				return authenticated.result.status === 200 && authenticated.result.body !== "Invalid API Key";
 			}
 			return false;
 		})();

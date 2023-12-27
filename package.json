@@ -3,7 +3,7 @@
 	"version": "2.0.2",
 	"description": "Plugin for viewing RetroAchievements progress. Part of the EmuDeck Project",
 	"scripts": {
-		"build": "shx rm -rf dist && python/entrypoint.sh && RELEASE_TYPE=production rollup -c",
+		"build": "shx rm -rf dist && python/entrypoint.sh && rollup -c",
 		"dev": "shx rm -rf dist && python/entrypoint.sh && RELEASE_TYPE=development rollup -c",
 		"watch": "rollup -c -w",
 		"test": "echo \"Error: no test specified\" && exit 1",
@@ -50,6 +50,7 @@
 		"typescript": "^4.7.4"
 	},
 	"dependencies": {
+		"async-mutex": "^0.4.0",
 		"bluebird": "^3.7.2",
 		"decky-frontend-lib": "^3.21.0",
 		"localforage": "^1.10.0",

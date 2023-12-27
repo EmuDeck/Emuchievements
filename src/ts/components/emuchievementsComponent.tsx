@@ -39,10 +39,16 @@ export const EmuchievementsComponent: VFC = () =>
 							 </PanelSectionRow>
 							 <PanelSectionRow>
 								 <ProgressBarWithInfo
-									    nProgress={loadingData.percentage}
 									    label={t("loading")}
-									    description={`${loadingData.processed}/${loadingData.total}`}
-									    sOperationText={loadingData.currentGame}
+									    layout="inline"
+									    bottomSeparator="none"
+									    sOperationText={loadingData.game}
+									    description={loadingData.description}
+									    nProgress={loadingData.percentage}
+									    sTimeRemaining={<div style={{
+										    paddingRight: "10px"
+									    }}>{!loadingData.fetching ? `${loadingData.processed}/${loadingData.total}` : ""}</div>}
+									    indeterminate={loadingData.fetching}
 								 />
 							 </PanelSectionRow>
 						 </PanelSection> :

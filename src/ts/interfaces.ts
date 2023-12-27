@@ -17,7 +17,7 @@ export enum StoreCategory
 	OnlineMultiPlayer = 36,
 	LocalMultiPlayer = 37,
 	OnlineCoOp = 38,
-	kLocalCoOp = 392,
+	LocalCoOp = 392,
 	RemotePlayTogether = 44,
 	HighQualitySoundtrackAudio = 50
 }
@@ -178,6 +178,6 @@ export interface AchievementsData
 {
 	game: Game,
 	last_updated_at: Date,
-	game_id?: number,
-	md5?: string
+	game_id: number,
+	md5: string
 }
