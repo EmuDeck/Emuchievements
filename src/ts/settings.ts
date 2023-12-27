@@ -11,7 +11,7 @@ export type SettingsData = {
 }
 
 export type CacheData = {
-	hashes: Record<number, string | null>,
+	hashes: Record<string, number>,
 	ids: Record<number, number | null>
 }
 

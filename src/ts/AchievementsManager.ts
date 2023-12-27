@@ -159,7 +159,7 @@ export class AchievementManager implements Manager
 		return this.cache.hashes
 	}
 
-	private set hashes(value: Record<number, string | null>) {
+	private set hashes(value: Record<string, number>) {
 		this.cache.hashes = value;
 	}
 
@@ -200,14 +200,12 @@ export class AchievementManager implements Manager
 	public clearCache()
 	{
 		this.clearRuntimeCache()
-		this.hashes = {}
 		this.ids = {}
 	}
 
 	public clearCacheForAppId(appId: number)
 	{
 		this.clearRuntimeCacheForAppId(appId)
-		delete this.hashes[appId]
 		delete this.ids[appId]
 	}
 
@@ -234,162 +232,108 @@ export class AchievementManager implements Manager
 			if (this.ids[app_id] === null)
 				resolve(undefined);
 			await this.waitForOnline()
-			let hash: string | undefined | null = this.hashes[app_id];
-			if (!hash)
+			const shortcut = await getAppDetails(app_id)
+			this.logger.debug(`${app_id} shortcut: `, shortcut)
+			let hash: string | null = null
+			if (shortcut)
 			{
-				const shortcut = await getAppDetails(app_id)
-				this.logger.debug(`${app_id} shortcut: `, shortcut)
-				if (shortcut)
+				const launchCommand = `${shortcut.strShortcutExe} ${shortcut.strShortcutLaunchOptions}`
+				this.logger.debug(`${app_id} launchCommand: `, launchCommand)
+				const rom = launchCommand?.match(new RegExp(romRegex, "i"))?.[0];
+				this.logger.debug(`${app_id} rom: `, rom)
+				if (rom)
 				{
-					const launchCommand = `${shortcut.strShortcutExe} ${shortcut.strShortcutLaunchOptions}`
-					this.logger.debug(`${app_id} launchCommand: `, launchCommand)
-					const rom = launchCommand?.match(new RegExp(romRegex, "i"))?.[0];
-					this.logger.debug(`${app_id} rom: `, rom)
-					if (rom)
+					const md5 = (await this.serverAPI.callPluginMethod<{
+						path: string
+					}, string>("Hash", {path: rom}));
+					this.logger.debug(`${app_id} md5: `, md5.result)
+					if (md5.success)
 					{
-						const md5 = (await this.serverAPI.callPluginMethod<{
-							path: string
-						}, string>("Hash", {path: rom}));
-						this.logger.debug(`${app_id} md5: `, md5.result)
-						if (md5.success)
+						if (md5.result === "")
 						{
-							if (md5.result === "")
-							{
-								this.hashes[app_id] = null;
-								this.ids[app_id] = null;
-								await this.saveCache();
-								resolve(undefined);
-							}
-							else
-							{
-								hash = md5.result;
-								this.hashes[app_id] = hash;
-								await this.saveCache();
-							}
-						} else reject(new Error(md5.result));
-					} else
-					{
-						this.hashes[app_id] = null;
-						this.ids[app_id] = null;
-						await this.saveCache();
-						resolve(undefined);
-					}
+							this.ids[app_id] = null
+							await this.saveCache();
+							resolve(undefined);
+						}
+						else
+						{
+							this.ids[app_id] = this.hashes[md5.result];
+							hash = md5.result
+							await this.saveCache();
+						}
+					} else reject(new Error(md5.result));
 				} else
 				{
-					this.hashes[app_id] = null;
 					this.ids[app_id] = null;
 					await this.saveCache();
 					resolve(undefined);
 				}
-			}
-			if (hash)
+			} else
 			{
-				let retry1 = 0
-				while (retry1 < 5)
+				this.ids[app_id] = null;
+				await this.saveCache();
+				resolve(undefined);
+			}
+			let game_id: number | undefined | null = this.ids[app_id];
+			if (game_id)
+			{
+				let retry = 0;
+				while (retry < 5)
 				{
-					let game_id: number | undefined | null = this.ids[app_id];
-					if (!game_id)
+					this.logger.debug(`${app_id} game_id: `, game_id)
+					const response = await this.serverAPI.fetchNoCors<{
+						body: string;
+						status: number
+					}>(`https://retroachievements.org/API/API_GetGameInfoAndUserProgress.php?z=${settings.username}&y=${settings.api_key}&u=${settings.username}&g=${game_id}`, {
+						headers: {
+							"User-Agent": `Emuchievements/${process.env.VERSION} (+https://github.com/EmuDeck/Emuchievements)`
+						}
+					})
+					if (response.success)
 					{
-						const response = (await this.serverAPI.fetchNoCors<{
-							body: string;
-							status: number
-						}>(`https://retroachievements.org/dorequest.php?r=gameid&m=${hash}`, {
-							headers: {
-								"User-Agent": `Emuchievements/${process.env.VERSION} (+https://github.com/EmuDeck/Emuchievements)`
-							}
-						}))
-						if (response.success)
+						if (response.result.status == 429 || response.result.status == 504 || response.result.status == 500)
 						{
-							if (response.result.status == 429 || response.result.status == 504 || response.result.status == 500)
+							this.logger.debug(`response status was ${response.result.status}, retrying`, retry);
+							retry++;
+						} else if (response.result.status == 200)
+						{
+							retry = 5;
+							const game = (JSON.parse(response.result.body)) as GameRaw
+
+							this.logger.debug(`${app_id} game: `, game)
+							if (game_id && hash)
 							{
-								this.logger.debug(`response status was ${response.result.status}, retrying`, retry1);
-								retry1++;
-								continue;
-							} else if (response.result.status == 200)
-							{
-								retry1 = 5;
-								game_id = (JSON.parse(response.result.body) as {
-									Success: boolean,
-									GameID: number
-								}).GameID;
-								this.ids[app_id] = game_id === 0 ? null : game_id
-								game_id = this.ids[app_id]
-								await this.saveCache();
-							} else
-							{
-								this.logger.debug(`response: ${JSON.stringify(response, undefined, "\t")}`);
-								reject(new Error(`${response.result.status}`));
+								const result: AchievementsData = {
+									game_id: game_id,
+									game: rawGameToGame(game),
+									md5: hash,
+									last_updated_at: new Date()
+								}
+								this.achievements[app_id] = result;
+								this.logger.debug(`${app_id} result:`, result)
+								resolve(result);
 								break;
 							}
-						} else {
-							reject(new Error(response.result));
+							else {
+								resolve(undefined);
+								break;
+							}
+
+						} else
+						{
+							this.logger.debug(`gameResponse: ${JSON.stringify(response, undefined, "\t")}`);
+							reject(new Error(`${response.result.status}`));
 							break;
 						}
-					}
-					if (game_id)
-					{
-						let retry2 = 0;
-						while (retry2 < 5)
-						{
-							this.logger.debug(`${app_id} game_id: `, game_id)
-							const response = await this.serverAPI.fetchNoCors<{
-								body: string;
-								status: number
-							}>(`https://retroachievements.org/API/API_GetGameInfoAndUserProgress.php?z=${settings.username}&y=${settings.api_key}&u=${settings.username}&g=${game_id}`, {
-								headers: {
-									"User-Agent": `Emuchievements/${process.env.VERSION} (+https://github.com/EmuDeck/Emuchievements)`
-								}
-							})
-							if (response.success)
-							{
-								if (response.result.status == 429 || response.result.status == 504 || response.result.status == 500)
-								{
-									this.logger.debug(`response status was ${response.result.status}, retrying`, retry2);
-									retry2++;
-								} else if (response.result.status == 200)
-								{
-									retry2 = 5;
-									const game = (JSON.parse(response.result.body)) as GameRaw
-
-									this.logger.debug(`${app_id} game: `, game)
-									if (game_id && hash)
-									{
-										const result: AchievementsData = {
-											game_id: game_id,
-											game: rawGameToGame(game),
-											md5: hash,
-											last_updated_at: new Date()
-										}
-										this.achievements[app_id] = result;
-										this.logger.debug(`${app_id} result:`, result)
-										resolve(result);
-										break;
-									}
-									else {
-										resolve(undefined);
-										break;
-									}
-
-								} else
-								{
-									this.logger.debug(`gameResponse: ${JSON.stringify(response, undefined, "\t")}`);
-									reject(new Error(`${response.result.status}`));
-									break;
-								}
-							} else {
-								reject(new Error(response.result));
-								break;
-							}
-						}
-						resolve(undefined);
-						break;
 					} else {
-						resolve(undefined);
+						reject(new Error(response.result));
 						break;
 					}
 				}
-				resolve(undefined)
-			} else resolve(undefined);
+				resolve(undefined);
+			} else {
+				resolve(undefined);
+			}
 		});
 	}
 
@@ -457,7 +401,7 @@ export class AchievementManager implements Manager
 					}
 			}).then(value => {
 				if (value.retro) (this.achievements)[app_id] = value.retro;
-				if (value.retro?.md5) (this.hashes)[app_id] = value.retro.md5;
+				if (value.retro?.game_id) (this.ids)[app_id] = value.retro.game_id;
 				(this.allAchievements)[app_id] = value.all;
 				(this.globalAchievements)[app_id] = value.global;
 				(this.loading)[app_id] = false;
@@ -558,7 +502,7 @@ export class AchievementManager implements Manager
 					if (value)
 					{
 						if (value.retro) (this.achievements)[app_id] = value.retro;
-						if (value.retro?.md5) (this.hashes)[app_id] = value.retro.md5;
+						if (value.retro?.game_id) (this.ids)[app_id] = value.retro.game_id;
 						(this.allAchievements)[app_id] = value.all;
 						(this.globalAchievements)[app_id] = value.global;
 					}
@@ -637,7 +581,8 @@ export class AchievementManager implements Manager
 	async count_achievements_for_app(app_id: number): Promise<{ numberOfAchievements: number, hash?: string }>
 	{
 		let numberOfAchievements = 0;
-		if (await this.fetchAchievementsAsync(app_id))
+		let achievements = await this.fetchAchievementsAsync(app_id)
+		if (achievements)
 		{
 			this.logger.debug(app_id, this.allAchievements)
 
@@ -679,7 +624,7 @@ export class AchievementManager implements Manager
 		}
 		return {
 			numberOfAchievements,
-			hash: this.hashes[app_id] ?? undefined
+			hash: achievements?.retro?.md5
 		}
 	}
 
@@ -718,6 +663,14 @@ export class AchievementManager implements Manager
 	async init(): Promise<void>
 	{
 		await this.loadCache();
+		const response = await this.serverAPI.fetchNoCors<{
+			body: string;
+			status: number
+		}>("https://retroachievements.org/dorequest.php?r=hashlibrary")
+		if (response.success)
+		{
+			this.hashes = (JSON.parse(response.result.body) as {MD5List: Record<string, number>}).MD5List
+		}
 		await this.refresh();
 	}
 
