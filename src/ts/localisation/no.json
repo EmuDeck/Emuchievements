@@ -18,6 +18,5 @@
 	"fetching": "Henter",
 	"noAchievements": "Ingen prestasjoner funnet",
 	"foundAchievements": "Lastet %%, Hash: %%",
-	"currentGame": "%%: %%",
 	"noLogin": "Du er ikke logget inn! Vennligst logg inn for å se prestasjoner."
 }
