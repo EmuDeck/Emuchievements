@@ -18,6 +18,5 @@
 	"fetching": "Recuperando",
 	"noAchievements": "No se encontraron logros",
 	"foundAchievements": "Cargado %%, Hash: %%",
-	"currentGame": "%%: %%",
 	"noLogin": "¡No has iniciado sesión! Por favor, inicia sesión para ver los logros."
 }
