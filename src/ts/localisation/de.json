@@ -18,6 +18,5 @@
 	"fetching": "Wird abgerufen",
 	"noAchievements": "Keine Achievements gefunden",
 	"foundAchievements": "Geladen %%, Hash: %%",
-	"currentGame": "%%: %%",
 	"noLogin": "Du bist nicht angemeldet! Bitte melde dich an, um deine Achievements zu sehen."
 }
