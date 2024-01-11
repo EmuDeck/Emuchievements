@@ -668,7 +668,7 @@ export class AchievementManager implements Manager
 			status: number
 		}>("https://retroachievements.org/dorequest.php?r=hashlibrary", {
 			headers: {
-				"User-Agent": `Emuachievements/${process.env.VERSION} (+https://github.com/EmuDeck/Emuchievements)`
+				"User-Agent": `Emuchievements/${process.env.VERSION} (+https://github.com/EmuDeck/Emuchievements)`
 			}
 		})
 		if (response.success)
