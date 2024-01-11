@@ -666,7 +666,11 @@ export class AchievementManager implements Manager
 		const response = await this.serverAPI.fetchNoCors<{
 			body: string;
 			status: number
-		}>("https://retroachievements.org/dorequest.php?r=hashlibrary", { headers: { "User-Agent": `Emuchievements/${process.env.VERSION} (+https://github.com/EmuDeck/Emuchievements)` }	})
+		}>("https://retroachievements.org/dorequest.php?r=hashlibrary", {
+			headers: {
+				"User-Agent": `Emuachievements/${process.env.VERSION} (+https://github.com/EmuDeck/Emuchievements)`
+			}
+		})
 		if (response.success)
 		{
 			this.hashes = (JSON.parse(response.result.body) as {MD5List: Record<string, number>}).MD5List
