@@ -11,7 +11,6 @@ export type SettingsData = {
 }
 
 export type CacheData = {
-	hashes: Record<string, number>,
 	ids: Record<number, number | null>
 }
 
@@ -21,7 +20,7 @@ export class Settings
 	private readonly state: EmuchievementsState;
 	private readonly logger: Logger = new Logger("Settings");
 	private readonly mutex: Mutex = new Mutex();
-	private readonly packet_size: number = 50;
+	private readonly packet_size: number = 2048;
 
 	data: SettingsData = {
 		username: "",

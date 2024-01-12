@@ -151,17 +151,10 @@ export class AchievementManager implements Manager
 	}
 
 	private cache: CacheData = {
-		hashes: {},
 		ids: {}
 	}
 
-	private get hashes() {
-		return this.cache.hashes
-	}
-
-	private set hashes(value: Record<string, number>) {
-		this.cache.hashes = value;
-	}
+	private hashes: Record<string, number> = {}
 
 	private get ids() {
 		return this.cache.ids
