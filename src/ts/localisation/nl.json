@@ -16,6 +16,7 @@
 	"refresh": "Refresh",
 	"loading": "Loading",
 	"fetching": "Fetching",
+	"error": "Error",
 	"noAchievements": "No Achievements Found",
 	"foundAchievements": "Loaded %%, Hash: %%",
 	"noLogin": "You are not logged in! Please login to view achievements."

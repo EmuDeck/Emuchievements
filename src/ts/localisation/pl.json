@@ -16,6 +16,7 @@
 	"refresh": "Odśwież",
 	"loading": "Ładowanie",
 	"fetching": "Pobieranie",
+	"error": "Error",
 	"noAchievements": "Nie znaleziono osiągnięć",
 	"foundAchievements": "Załadowano %%, Hash: %%",
 	"noLogin": "Nie jesteś zalogowany! Zaloguj się, aby zobaczyć osiągnięcia."

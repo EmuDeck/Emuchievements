@@ -16,6 +16,7 @@
 	"refresh": "Gjenoppfrisk",
 	"loading": "Laster",
 	"fetching": "Henter",
+	"error": "Error",
 	"noAchievements": "Ingen prestasjoner funnet",
 	"foundAchievements": "Lastet %%, Hash: %%",
 	"noLogin": "Du er ikke logget inn! Vennligst logg inn for å se prestasjoner."

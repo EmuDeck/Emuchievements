@@ -16,6 +16,7 @@
 	"refresh": "Actualiser",
 	"loading": "Chargement",
 	"fetching": "Téléchargement",
+	"error": "Error",
 	"noAchievements": "Aucun succès trouvé",
 	"foundAchievements": "Chargé %%, Hash: %%",
 	"noLogin": "Vous n'êtes pas connecté! Veuillez vous connecter pour voir les succès."

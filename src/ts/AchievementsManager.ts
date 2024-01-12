@@ -67,6 +67,16 @@ export class AchievementManager implements Manager
 	{
 		this.state.loadingData.globalLoading = value;
 	}
+	
+	get errored(): boolean
+	{
+		return this.state.loadingData.errored;
+	}
+	
+	set errored(value: boolean)
+	{
+		this.state.loadingData.errored = value;
+	}
 
 	get processed(): number
 	{
@@ -219,11 +229,10 @@ export class AchievementManager implements Manager
 
 	public async getAchievementsForGame(app_id: number): Promise<AchievementsData | undefined>
 	{
-		return new Promise<AchievementsData | undefined>(async (resolve, reject) => {
 			const settings = await this.state.settings;
 			this.logger.debug(`${app_id} auth: `, settings.username, settings.api_key)
 			if (this.ids[app_id] === null)
-				resolve(undefined);
+				return undefined;
 			await this.waitForOnline()
 			const shortcut = await getAppDetails(app_id)
 			this.logger.debug(`${app_id} shortcut: `, shortcut)
@@ -246,7 +255,7 @@ export class AchievementManager implements Manager
 						{
 							this.ids[app_id] = null
 							await this.saveCache();
-							resolve(undefined);
+							return undefined;
 						}
 						else
 						{
@@ -254,26 +263,32 @@ export class AchievementManager implements Manager
 							hash = md5.result
 							await this.saveCache();
 						}
-					} else reject(new Error(md5.result));
+					} else throw new Error(md5.result):
 				} else
 				{
 					this.ids[app_id] = null;
 					await this.saveCache();
-					resolve(undefined);
+					return undefined;
 				}
 			} else
 			{
 				this.ids[app_id] = null;
 				await this.saveCache();
-				resolve(undefined);
+				return undefined;
 			}
 			let game_id: number | undefined | null = this.ids[app_id];
 			if (game_id)
 			{
 				let retry = 0;
+				let sleep_ms = 1000;
 				while (retry < 5)
 				{
 					this.logger.debug(`${app_id} game_id: `, game_id)
+					if (retry > 0)
+					{
+						await sleep(sleep_ms)
+						sleep_ms *= 2
+					}
 					const response = await this.serverAPI.fetchNoCors<{
 						body: string;
 						status: number
@@ -290,7 +305,6 @@ export class AchievementManager implements Manager
 							retry++;
 						} else if (response.result.status == 200)
 						{
-							retry = 5;
 							const game = (JSON.parse(response.result.body)) as GameRaw
 
 							this.logger.debug(`${app_id} game: `, game)
@@ -304,30 +318,29 @@ export class AchievementManager implements Manager
 								}
 								this.achievements[app_id] = result;
 								this.logger.debug(`${app_id} result:`, result)
-								resolve(result);
+								return result;
 								break;
 							}
 							else {
-								resolve(undefined);
+								return undefined;
 								break;
 							}
 
 						} else
 						{
 							this.logger.debug(`gameResponse: ${JSON.stringify(response, undefined, "\t")}`);
-							reject(new Error(`${response.result.status}`));
+							throw new Error(`${response.result.status}`);
 							break;
 						}
 					} else {
-						reject(new Error(response.result));
+						throw new Error(response.result);
 						break;
 					}
 				}
-				resolve(undefined);
+				 throw new Error("Maximum retries exceeded");
 			} else {
-				resolve(undefined);
+				return undefined;
 			}
-		});
 	}
 
 
@@ -524,7 +537,12 @@ export class AchievementManager implements Manager
 				this.game = this.t("fetching")
 				this.fetching = true;
 				this.clearRuntimeCache();
-				await this.refresh_achievements_for_apps((await getAllNonSteamAppIds()).filter(appId => this.ids[appId] !== null))
+				await (this.refresh_achievements_for_apps((await getAllNonSteamAppIds()).filter(appId => this.ids[appId] !== null)).catch((e) => {
+					this.globalLoading = false:
+					this.errored = true;
+					this.game = this.t("error");
+					this.description = e.message;
+				}))
 			}
 		} else
 		{
@@ -543,7 +561,7 @@ export class AchievementManager implements Manager
 		this.processed = 0;
 		await Promise.map(app_ids, (async (app_id) => await this.refresh_achievements_for_app(app_id)), {
 			concurrency: 8
-		});
+		})
 		this.globalLoading = false;
 		this.game = this.t("fetching");
 		this.description = "";

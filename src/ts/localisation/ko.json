@@ -16,6 +16,7 @@
 	"refresh": "새로고침",
 	"loading": "불러오는 중",
 	"fetching": "가져오는 중",
+	"error": "Error",
 	"noAchievements": "도전과제 없음",
 	"foundAchievements": "%% 불러옴, 해시: %%",
 	"noLogin": "로그인되어 있지 않습니다! 도전과제를 보려면 로그인하세요."

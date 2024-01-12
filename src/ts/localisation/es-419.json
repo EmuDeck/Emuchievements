@@ -16,6 +16,7 @@
 	"refresh": "Actualizar",
 	"loading": "Cargando",
 	"fetching": "Recuperando",
+	"error": "Error",
 	"noAchievements": "No se encontraron logros",
 	"foundAchievements": "Cargado %%, Hash: %%",
 	"noLogin": "¡No has iniciado sesión! Por favor, inicia sesión para ver los logros."

@@ -12,13 +12,15 @@ interface LoadingData
 	get percentage(): number
 	get globalLoading(): boolean,
 	set globalLoading(value: boolean),
+	get errored(): boolean,
+	set errored(value: boolean),
 	get game(): string,
 	set game(value: string),
 	get description(): string,
 	set description(value: string),
 	get processed(): number,
 	set processed(value: number),
-     get total(): number,
+	get total(): number,
 	set total(value: number),
 	get fetching(): boolean,
 	set fetching(value: boolean)
@@ -71,8 +73,22 @@ export class EmuchievementsState
 			this._globalLoading = value;
 			this.state.notifyUpdate();
 		}
+		
+		private _errored = false;
+
+		get errored(): boolean
+		{
+			return this._errored;
+		}
+
+		set errored(value: boolean)
+		{
+			this._errored = value;
+			this.state.notifyUpdate();
+		}
 
 		private _total =  0;
+
 		get total(): number
 		{
 			return this._total;
@@ -85,6 +101,7 @@ export class EmuchievementsState
 		}
 
 		private _processed = 0;
+
 		get processed(): number
 		{
 			return this._processed;
@@ -97,6 +114,7 @@ export class EmuchievementsState
 		}
 
 		private _game = this.t("fetching");
+
 		get game(): string
 		{
 			return this._game;
@@ -109,6 +127,7 @@ export class EmuchievementsState
 		}
 
 		private _description = "";
+
 		get description(): string
 		{
 			return this._description;
@@ -121,6 +140,7 @@ export class EmuchievementsState
 		}
 
 		private _fetching =  true;
+
 		get fetching(): boolean
 		{
 			return this._fetching;

@@ -16,6 +16,7 @@
 	"refresh": "Atualizar",
 	"loading": "Carregando",
 	"fetching": "Buscando",
+	"error": "Error",
 	"noAchievements": "Nenhuma Conquista Encontrada",
 	"foundAchievements": "Carregado %%, Hash: %%",
 	"noLogin": "Você não está logado! Por favor, faça o login para visualizar as conquistas."

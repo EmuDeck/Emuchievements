@@ -16,6 +16,7 @@
 	"refresh": "Obnovit",
 	"loading": "Načítání",
 	"fetching": "Nahrávám",
+	"error": "Error",
 	"noAchievements": "Nebyly nalezeny žádné úspěchy",
 	"foundAchievements": "Načteno %%, Hash: %%",
 	"noLogin": "Nejste přihlášeni! Pro zobrazení herních úspěchů se přihlaste."
