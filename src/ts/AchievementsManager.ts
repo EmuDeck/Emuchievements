@@ -581,22 +581,24 @@ export class AchievementManager implements Manager
 	private async refresh_achievements_for_app(app_id: number): Promise<void>
 	{
 		try {
-			const overview = appStore.GetAppOverviewByAppID(app_id);
-
-			const details = await getAppDetails(app_id)
-			const data = await this.count_achievements_for_app(app_id)
-			if (details && data.numberOfAchievements !== 0)
-			{
-				this.game = overview.display_name;
-				this.description = format(this.t("foundAchievements"), data.numberOfAchievements, data.hash);
-				this.processed++;
-			} else
-			{
-				this.game = overview.display_name;
-				this.description = this.t("noAchievements")
-				this.processed++;
-			}
-			this.logger.debug(`loading achievements: ${this.state.loadingData.percentage}% done`, app_id, details, overview)
+			await this.throttle(() => {
+				const overview = appStore.GetAppOverviewByAppID(app_id);
+	
+				const details = await getAppDetails(app_id)
+				const data = await this.count_achievements_for_app(app_id)
+				if (details && data.numberOfAchievements !== 0)
+				{
+					this.game = overview.display_name;
+					this.description = format(this.t("foundAchievements"), data.numberOfAchievements, data.hash);
+					this.processed++;
+				} else
+				{
+					this.game = overview.display_name;
+					this.description = this.t("noAchievements")
+					this.processed++;
+				}
+				this.logger.debug(`loading achievements: ${this.state.loadingData.percentage}% done`, app_id, details, overview)
+			})
 		}
 		catch (e) {
 			throw e;
