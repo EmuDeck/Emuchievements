@@ -581,7 +581,7 @@ export class AchievementManager implements Manager
 	private async refresh_achievements_for_app(app_id: number): Promise<void>
 	{
 		try {
-			await this.throttle(() => {
+			await this.throttle(async () => {
 				const overview = appStore.GetAppOverviewByAppID(app_id);
 	
 				const details = await getAppDetails(app_id)
