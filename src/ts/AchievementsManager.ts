@@ -316,6 +316,11 @@ export class AchievementManager implements Manager
 									md5: hash,
 									last_updated_at: new Date()
 								}
+								if (result.game?.achievements?.length == 0)
+								{
+									return undefined;
+									break;
+								}
 								this.achievements[app_id] = result;
 								this.logger.debug(`${app_id} result:`, result)
 								return result;
