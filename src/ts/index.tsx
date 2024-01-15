@@ -142,10 +142,10 @@ export default definePlugin(function (serverAPI: ServerAPI) {
 						   let data = state.managers.achievementManager.fetchAchievements(args[0]);
 						   logger.debug(data.global);
 						   if (!data.global.loading)
-							   Achievements.m_mapGlobalAchievements.set(args[0], data.global.data);
+							   Achievements.m_mapGlobalAchievements.set(args[0], data.global);
 						   logger.debug(data.all);
 						   if (!data.all.loading)
-							   Achievements.m_mapMyAchievements.set(args[0], data.all.data);
+							   Achievements.m_mapMyAchievements.set(args[0], data.all);
 						   return;
 					   }
 					   return callOriginal;
