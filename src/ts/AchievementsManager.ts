@@ -277,10 +277,10 @@ export class AchievementManager implements Manager
 				return undefined;
 			}
 			let game_id: number | undefined | null = this.ids[app_id];
-			if (game_id)
+			if (typeof game_id === "number" && game_id !== 0)
 			{
 				let retry = 0;
-				let sleep_ms = 1000;
+				let sleep_ms = 2000;
 				while (retry < 5)
 				{
 					this.logger.debug(`${app_id} game_id: `, game_id)
@@ -537,12 +537,15 @@ export class AchievementManager implements Manager
 				this.game = this.t("fetching")
 				this.fetching = true;
 				this.clearRuntimeCache();
-				await (this.refresh_achievements_for_apps((await getAllNonSteamAppIds()).filter(appId => this.ids[appId] !== null)).catch((e) => {
+				try {
+					await (this.refresh_achievements_for_apps((await getAllNonSteamAppIds()).filter(appId => this.ids[appId] !== null)))
+				}
+				catch (e) {
 					this.globalLoading = false:
 					this.errored = true;
 					this.game = this.t("error");
 					this.description = e.message;
-				}))
+				}
 			}
 		} else
 		{
@@ -556,86 +559,102 @@ export class AchievementManager implements Manager
 
 	async refresh_achievements_for_apps(app_ids: number[]): Promise<void>
 	{
-		this.fetching = false;
-		this.total = app_ids.length;
-		this.processed = 0;
-		await Promise.map(app_ids, (async (app_id) => await this.refresh_achievements_for_app(app_id)), {
-			concurrency: 8
-		})
-		this.globalLoading = false;
-		this.game = this.t("fetching");
-		this.description = "";
-		this.processed = 0;
-		this.total = 0;
+		try {
+			this.fetching = false;
+			this.total = app_ids.length;
+			this.processed = 0;
+			await Promise.map(app_ids, (async (app_id) => await this.refresh_achievements_for_app(app_id)), {
+				concurrency: 8
+			})
+			
+			this.globalLoading = false;
+			this.game = this.t("fetching");
+			this.description = "";
+			this.processed = 0;
+			this.total = 0;
+		}
+		catch (e) {
+			throw e;
+		}
 	}
 
 	private async refresh_achievements_for_app(app_id: number): Promise<void>
 	{
-		const overview = appStore.GetAppOverviewByAppID(app_id);
+		try {
+			const overview = appStore.GetAppOverviewByAppID(app_id);
 
-		const details = await getAppDetails(app_id)
-		const data = await this.count_achievements_for_app(app_id)
-		if (details && data.numberOfAchievements !== 0)
-		{
-			this.game = overview.display_name;
-			this.description = format(this.t("foundAchievements"), data.numberOfAchievements, data.hash);
-			this.processed++;
-		} else
-		{
-			this.game = overview.display_name;
-			this.description = this.t("noAchievements")
-			this.processed++;
+			const details = await getAppDetails(app_id)
+			const data = await this.count_achievements_for_app(app_id)
+			if (details && data.numberOfAchievements !== 0)
+			{
+				this.game = overview.display_name;
+				this.description = format(this.t("foundAchievements"), data.numberOfAchievements, data.hash);
+				this.processed++;
+			} else
+			{
+				this.game = overview.display_name;
+				this.description = this.t("noAchievements")
+				this.processed++;
+			}
+			this.logger.debug(`loading achievements: ${this.state.loadingData.percentage}% done`, app_id, details, overview)
 		}
-		this.logger.debug(`loading achievements: ${this.state.loadingData.percentage}% done`, app_id, details, overview)
+		catch (e) {
+			throw e;
+		}
 	}
 
 	async count_achievements_for_app(app_id: number): Promise<{ numberOfAchievements: number, hash?: string }>
 	{
-		let numberOfAchievements = 0;
-		let achievements = await this.fetchAchievementsAsync(app_id)
-		if (achievements)
-		{
-			this.logger.debug(app_id, this.allAchievements)
-
-
-			if (!!this.allAchievements[app_id])
+		try {
+			let numberOfAchievements = 0;
+			let achievements = await this.fetchAchievementsAsync(app_id)
+			if (achievements)
 			{
-				const ret = this.allAchievements[app_id]?.data
-				if (!!ret)
+				this.logger.debug(app_id, this.allAchievements)
+	
+	
+				if (!!this.allAchievements[app_id])
 				{
-					if (!appAchievementProgressCache.m_achievementProgress)
+					const ret = this.allAchievements[app_id]?.data
+					if (!!ret)
 					{
-						await appAchievementProgressCache.RequestCacheUpdate()
+						if (!appAchievementProgressCache.m_achievementProgress)
+						{
+							await appAchievementProgressCache.RequestCacheUpdate()
+						}
+						numberOfAchievements = Object.keys(ret.achieved).length + Object.keys(ret.unachieved).length;
+						const nAchieved = Object.keys(ret.achieved).length;
+						const nTotal = Object.keys(ret.achieved).length + Object.keys(ret.unachieved).length;
+						runInAction(() => {
+							appAchievementProgressCache.m_achievementProgress.mapCache.set(app_id, {
+								all_unlocked: nAchieved === nTotal,
+								appid: app_id,
+								cache_time: new Date().getTime(),
+								percentage: (nAchieved / nTotal) * 100,
+								total: nTotal,
+								unlocked: nAchieved
+							});
+							appAchievementProgressCache.SaveCacheFile()
+							this.logger.debug(`achievementsCache: `, {
+								all_unlocked: nAchieved === nTotal,
+								appid: app_id,
+								cache_time: new Date().getTime(),
+								percentage: (nAchieved / nTotal) * 100,
+								total: nTotal,
+								unlocked: nAchieved
+							}, appAchievementProgressCache.m_achievementProgress.mapCache.get(app_id))
+						})
 					}
-					numberOfAchievements = Object.keys(ret.achieved).length + Object.keys(ret.unachieved).length;
-					const nAchieved = Object.keys(ret.achieved).length;
-					const nTotal = Object.keys(ret.achieved).length + Object.keys(ret.unachieved).length;
-					runInAction(() => {
-						appAchievementProgressCache.m_achievementProgress.mapCache.set(app_id, {
-							all_unlocked: nAchieved === nTotal,
-							appid: app_id,
-							cache_time: new Date().getTime(),
-							percentage: (nAchieved / nTotal) * 100,
-							total: nTotal,
-							unlocked: nAchieved
-						});
-						appAchievementProgressCache.SaveCacheFile()
-						this.logger.debug(`achievementsCache: `, {
-							all_unlocked: nAchieved === nTotal,
-							appid: app_id,
-							cache_time: new Date().getTime(),
-							percentage: (nAchieved / nTotal) * 100,
-							total: nTotal,
-							unlocked: nAchieved
-						}, appAchievementProgressCache.m_achievementProgress.mapCache.get(app_id))
-					})
 				}
+	
 			}
-
+			return {
+				numberOfAchievements,
+				hash: achievements?.retro?.md5
+			}
 		}
-		return {
-			numberOfAchievements,
-			hash: achievements?.retro?.md5
+		catch (e) {
+			throw e;
 		}
 	}
 
