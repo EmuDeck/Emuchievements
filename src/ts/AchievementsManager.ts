@@ -710,7 +710,7 @@ export class AchievementManager implements Manager
 		})
 		if (response.success)
 		{
-			this.hashes = (JSON.parse(response.result.body.toLowerCase()) as {MD5List: Record<string, number>}).MD5List
+			this.hashes = (JSON.parse(response.result.body.toLowerCase()) as {md5list: Record<string, number>}).md5list
 		}
 		await this.refresh();
 	}
