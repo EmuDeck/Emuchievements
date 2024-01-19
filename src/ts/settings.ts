@@ -26,7 +26,6 @@ export class Settings
 		username: "",
 		api_key: "",
 		cache: {
-			hashes: {},
 			ids: {}
 		},
 		hidden: false,
