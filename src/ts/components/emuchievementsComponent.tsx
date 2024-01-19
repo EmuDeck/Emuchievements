@@ -9,7 +9,7 @@ import {
 	ProgressBarWithInfo
 } from "decky-frontend-lib";
 import {useEmuchievementsState} from "../hooks/achievementsContext";
-import {FaSync} from "react-icons/fa";
+import {FaSync, FaTrash} from "react-icons/fa";
 import Logger from "../logger";
 import {useTranslations} from "../useTranslations";
 
@@ -60,7 +60,21 @@ export const EmuchievementsComponent: VFC = () =>
 							<PanelSectionRow>
 								<ButtonItem
 									onClick={() => void refresh()}
-								><FaSync/> {t("refresh")}</ButtonItem>
+								>
+									<FaSync/> 
+									{t("refresh")}
+								</ButtonItem>
+							</PanelSectionRow>
+							<PanelSectionRow>
+								<ButtonItem
+								onClick={() => {
+									achievementManager.clearCache();
+									void achievementManager.saveCache();
+								}}
+								>
+									<FaTrash/>
+									{t("clear")}
+								</ButtonItem>
 							</PanelSectionRow>
 							 <PanelSectionRow>
 								 <ProgressBarWithInfo
@@ -90,6 +104,17 @@ export const EmuchievementsComponent: VFC = () =>
 								<ButtonItem
 									onClick={() => void refresh()}
 								><FaSync/> {t("refresh")}</ButtonItem>
+							</PanelSectionRow>
+							<PanelSectionRow>
+								<ButtonItem
+								onClick={() => {
+									achievementManager.clearCache();
+									void achievementManager.saveCache();
+								}}
+								>
+									<FaTrash/>
+									{t("clear")}
+								</ButtonItem>
 							</PanelSectionRow>
 							{
 								(() => {
