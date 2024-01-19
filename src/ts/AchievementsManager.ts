@@ -263,7 +263,7 @@ export class AchievementManager implements Manager
 							hash = md5.result
 							await this.saveCache();
 						}
-					} else throw new Error(md5.result):
+					} else throw new Error(md5.result);
 				} else
 				{
 					this.ids[app_id] = null;
@@ -545,8 +545,8 @@ export class AchievementManager implements Manager
 				try {
 					await (this.refresh_achievements_for_apps((await getAllNonSteamAppIds()).filter(appId => this.ids[appId] !== null)))
 				}
-				catch (e) {
-					this.globalLoading = false:
+				catch (e: any) {
+					this.globalLoading = false;
 					this.errored = true;
 					this.game = this.t("error");
 					this.description = e.message;
