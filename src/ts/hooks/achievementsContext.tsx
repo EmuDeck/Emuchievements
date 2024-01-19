@@ -206,16 +206,16 @@ export class EmuchievementsState
      {
 		return this._settings;
 	}
-	private login: boolean = false;
+	private _login: boolean = false;
 	get loggedIn(): Promise<boolean>
 	{
 		return (async () => {
-			if (this.login === true) return true;
+			if (this._login === true) return true;
 			const authenticated = await this.serverAPI.fetchNoCors<{ body: string; status: number }>(`https://retroachievements.org/API/API_GetAchievementOfTheWeek.php?z=${this.settings.username}&y=${this.settings.api_key}`)
 			if (authenticated.success)
 			{
-				this.login = authenticated.result.status === 200 && authenticated.result.body !== "Invalid API Key";
-				return this.login;
+				this._login = authenticated.result.status === 200 && authenticated.result.body !== "Invalid API Key";
+				return this._login;
 			}
 			return false;
 		})();
