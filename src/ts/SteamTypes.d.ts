@@ -1,43 +1,40 @@
-import React, {ReactElement, ReactNode} from "react";
-import {AppDetails} from "decky-frontend-lib";
-import {Hook} from "./SteamClient";
+import React, { ReactElement, ReactNode } from "react";
+import { AppDetails } from "decky-frontend-lib";
+import { Hook } from "./SteamClient";
+import { StoreCategory } from "./Interfaces";
 
 type Hook = {
-	unregister: () => void
-}
+	unregister: () => void;
+};
 
 type AllAchievements =
-	   {
-		   loading?: boolean
-		   data?: {
-			   achieved: {
-				   [key: string]: SteamAppAchievement
-			   },
-			   hidden: {
-				   [key: string]: SteamAppAchievement
-			   },
-			   unachieved: {
-				   [key: string]: SteamAppAchievement
-			   },
-		   }
-	   }
+	{
+		loading?: boolean;
+		data?: {
+			achieved: {
+				[key: string]: SteamAppAchievement;
+			},
+			hidden: {
+				[key: string]: SteamAppAchievement;
+			},
+			unachieved: {
+				[key: string]: SteamAppAchievement;
+			},
+		};
+	};
 
 type GlobalAchievements =
-	   {
-		   loading?: boolean
-		   data?: {
-			   [key: string]: number
-		   }
-	   }
+	{
+		loading?: boolean;
+		data?: {
+			[key: string]: number;
+		};
+	};
 
 type SteamAppLanguages = {
 	strDisplayName: string,
-	strShortName: string
-}
-
-import React, {ReactElement} from "react";
-import {AppDetails} from "decky-frontend-lib";
-import {StoreCategory} from "./Interfaces";
+	strShortName: string;
+};
 
 type SteamShortcut = {
 	appid: number,
@@ -47,43 +44,43 @@ type SteamShortcut = {
 		strExePath: string,
 		strArguments: string,
 		strShortcutPath: string,
-		strSortAs: string
-	}
-}
+		strSortAs: string;
+	};
+};
 
 type LifetimeNotification = {
 	unAppID: number; // seems to be 0 for shortcuts :/
 	nInstanceID: number;
 	bRunning: boolean;
-}
+};
 
 type SteamAppAchievements = {
-	nAchieved: number
-	nTotal: number
-	vecAchievedHidden: any[]
-	vecHighlight: any[]
-	vecUnachieved: any[]
-}
+	nAchieved: number;
+	nTotal: number;
+	vecAchievedHidden: any[];
+	vecHighlight: any[];
+	vecUnachieved: any[];
+};
 
 type SteamAppAchievement =
-	   {
-		   strID: string,
-		   strName: string,
-		   strDescription: string,
-		   bAchieved: boolean,
-		   rtUnlocked: number,
-		   strImage: string,
-		   bHidden: boolean,
-		   flMinProgress: number,
-		   flCurrentProgress: number,
-		   flMaxProgress: number,
-		   flAchieved: number
-	   }
+	{
+		strID: string,
+		strName: string,
+		strDescription: string,
+		bAchieved: boolean,
+		rtUnlocked: number,
+		strImage: string,
+		bHidden: boolean,
+		flMinProgress: number,
+		flCurrentProgress: number,
+		flMaxProgress: number,
+		flAchieved: number;
+	};
 
 type SteamAppLanguages = {
 	strDisplayName: string,
-	strShortName: string
-}
+	strShortName: string;
+};
 
 type SteamAppDetails = {
 	achievements: SteamAppAchievements,
@@ -163,7 +160,7 @@ type SteamAppDetails = {
 	libraryAssets?: {
 		logoPosition?: LogoPosition;
 	};
-}
+};
 
 type SteamGameClientData = {
 	bytes_downloaded: string,
@@ -173,8 +170,8 @@ type SteamGameClientData = {
 	cloud_status: number,
 	display_status: number,
 	is_available_on_current_platform: boolean,
-	status_percentage: number
-}
+	status_percentage: number;
+};
 
 type SteamAppOverview = {
 	__proto__: SteamAppOverview,
@@ -184,7 +181,7 @@ type SteamAppOverview = {
 	display_name: string,
 	steam_deck_compat_category: number,
 	size_on_disk: string | undefined, // can use the type of this to determine if an app is installed!
-	association: { type: number, name: string }[],
+	association: { type: number, name: string; }[],
 	canonicalAppType: number,
 	controller_support: number,
 	header_filename: string | undefined,
@@ -241,7 +238,7 @@ type SteamAppOverview = {
 	status_percentage: number,
 	store_category: number[],
 	store_tag: number[],
-}
+};
 
 type SteamTab = {
 	title: string,
@@ -251,34 +248,34 @@ type SteamTab = {
 		onOptrionActionsDescription: string,
 		onOptionsButtion: () => any,
 		onSecondaryActionDescription: ReactElement,
-		onSecondaryButton: () => any
+		onSecondaryButton: () => any;
 	},
-	renderTabAddon: () => ReactElement
-}
+	renderTabAddon: () => ReactElement;
+};
 
 type SteamCollection = {
-	__proto__: SteamCollection
-	AsDeletableCollection: () => null
-	AsDragDropCollection: () => null
-	AsEditableCollection: () => null
-	GetAppCountWithToolsFilter: (t: any) => any
-	allApps: SteamAppOverview[]
-	apps: Map<number, SteamAppOverview>
-	bAllowsDragAndDrop: boolean
-	bIsDeletable: boolean
-	bIsDynamic: boolean
-	bIsEditable: boolean
-	displayName: string
+	__proto__: SteamCollection;
+	AsDeletableCollection: () => null;
+	AsDragDropCollection: () => null;
+	AsEditableCollection: () => null;
+	GetAppCountWithToolsFilter: (t: any) => any;
+	allApps: SteamAppOverview[];
+	apps: Map<number, SteamAppOverview>;
+	bAllowsDragAndDrop: boolean;
+	bIsDeletable: boolean;
+	bIsDynamic: boolean;
+	bIsEditable: boolean;
+	displayName: string;
 	id: string,
-	visibleApps: SteamAppOverview[]
-}
+	visibleApps: SteamAppOverview[];
+};
 
 type CollectionStore = {
-	userCollections: SteamCollection[]
-	GetUserCollectionsByName: (name: string) => SteamCollection[]
+	userCollections: SteamCollection[];
+	GetUserCollectionsByName: (name: string) => SteamCollection[];
 	allAppsCollection: SteamCollection,
 	deckDesktopApps: SteamCollection;
-}
+};
 
 type AppData = {
 	"details": SteamAppDetails,
@@ -286,38 +283,38 @@ type AppData = {
 	"associationData": {
 		rgDevelopers: {
 			strName: string,
-			strURL: string
+			strURL: string;
 		}[],
 		rgPublishers: {
 			strName: string,
-			strURL: string
-		}[]
+			strURL: string;
+		}[];
 		rgFranchises: {
 			strName: string,
-			strURL: string
-		}[]
+			strURL: string;
+		}[];
 	},
 	"appDetailsSpotlight": null,
 	"descriptionsData": {
 		strFullDescription: ReactNode,
-		strSnippet: ReactNode
+		strSnippet: ReactNode;
 	},
 	"screenshots": null,
 	"customImageInfoRtime": number,
 	"cRegistered": 0,
 	"listeners": [],
 	"hAppDetails": {},
-	"bLoadingAchievments": boolean
-}
+	"bLoadingAchievments": boolean;
+};
 
 type AppDetailsStore = {
 	__proto__: AppDetailsStore;
 	GetAppDetails(id: number): SteamAppDetails,
-	RegisterForAppData(app_id: any, callback: (data: SteamAppDetails) => void): Hook
+	RegisterForAppData(app_id: any, callback: (data: SteamAppDetails) => void): Hook;
 	GetAchievements(app_id: number): SteamAppAchievements;
 	GetAppData(app_id: number): AppData;
-	GetLogoImages(overview: SteamAppOverview): {rgLogoImages: string[]};
-}
+	GetLogoImages(overview: SteamAppOverview): { rgLogoImages: string[]; };
+};
 
 type AppStore = {
 	m_mapApps: ObservableMap<number, SteamAppOverview>;
@@ -338,16 +335,16 @@ type AppStore = {
 	GetLandscapeImageURLForApp: any,
 	GetCachedLandscapeImageURLForApp: any,
 	GetVerticalCapsuleURLForApp: any,
-	GetPregeneratedVerticalCapsuleForApp: any
+	GetPregeneratedVerticalCapsuleForApp: any;
 	GetCachedVerticalCapsuleURL: any,
 	GetCustomImageURLs: any,
 	GetCustomVerticalCapsuleURLs: any,
 	GetCustomLandcapeImageURLs: any,
 	GetCustomHeroImageURLs: any,
 	GetCustomLogoImageURLs: any,
-	GetStorePageURLForApp: any
-}
+	GetStorePageURLForApp: any;
+};
 
 type UIStore = {
-	collectionsAppFilter: any
-}
+	collectionsAppFilter: any;
+};

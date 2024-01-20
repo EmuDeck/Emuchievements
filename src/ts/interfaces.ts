@@ -80,7 +80,7 @@ export interface Game
 	last_played?: string,
 	my_vote?: string,
 	completion_percentage?: string,
-	completion_percentage_hardcore?: string
+	completion_percentage_hardcore?: string;
 }
 
 export interface AchievementRaw
@@ -105,7 +105,7 @@ export interface AchievementRaw
 	"GameID": number,
 	"GameTitle": string,
 	"HardcoreMode": boolean,
-	"IsAwarded": boolean
+	"IsAwarded": boolean;
 }
 
 export interface GameRaw
@@ -133,7 +133,7 @@ export interface GameRaw
 		"ID": number,
 		"Name": string,
 		"Created": string,
-		"Updated": string
+		"Updated": string;
 	},
 	"ConsoleName": string,
 	"NumDistinctPlayersCasual": number,
@@ -148,30 +148,30 @@ export interface GameRaw
 	"MyVote": string,
 	"PossibleScore": number,
 	"ScoreAchieved": number,
-	"ScoreAchievedHardcore": number
+	"ScoreAchievedHardcore": number;
 }
 
 export interface Login
 {
 	username: string,
-	api_key: string
+	api_key: string;
 }
 
 export interface GetUserRecentlyPlayedGamesParams
 {
-	count: number
+	count: number;
 }
 
 export interface GetGameInfoAndUserProgressParams
 {
-	game_id: number
+	game_id: number;
 }
 
 export interface APIState
 {
 	games: Game[],
-	achievements: { [key: number]: Game },
-	loading: boolean
+	achievements: { [key: number]: Game; },
+	loading: boolean;
 }
 
 export interface AchievementsData
@@ -179,5 +179,5 @@ export interface AchievementsData
 	game: Game,
 	last_updated_at: Date,
 	game_id: number,
-	md5: string
+	md5: string;
 }

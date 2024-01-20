@@ -1,34 +1,34 @@
-import {ServerAPI} from "decky-frontend-lib";
-import {createContext, FC, ReactNode, useContext, useEffect, useState} from "react";
-import {AchievementManager, Manager} from "../AchievementsManager";
-import {getAllNonSteamAppIds} from "../steam-utils";
-import {Promise} from "bluebird";
-import {Login} from "../interfaces";
-import {Settings} from "../settings";
-import {getTranslateFunc} from "../useTranslations";
+import { ServerAPI } from "decky-frontend-lib";
+import { createContext, FC, ReactNode, useContext, useEffect, useState } from "react";
+import { AchievementManager, Manager } from "../AchievementsManager";
+import { getAllNonSteamAppOverview } from "../steam-utils";
+import { Promise } from "bluebird";
+import { Login } from "../interfaces";
+import { Settings } from "../settings";
+import { getTranslateFunc } from "../useTranslations";
 
 interface LoadingData
 {
-	get percentage(): number
-	get globalLoading(): boolean,
-	set globalLoading(value: boolean),
-	get errored(): boolean,
-	set errored(value: boolean),
-	get game(): string,
-	set game(value: string),
-	get description(): string,
-	set description(value: string),
-	get processed(): number,
-	set processed(value: number),
-	get total(): number,
-	set total(value: number),
-	get fetching(): boolean,
-	set fetching(value: boolean)
+	get percentage(): number;
+	get globalLoading(): boolean;
+	set globalLoading(value: boolean);
+	get errored(): boolean;
+	set errored(value: boolean);
+	get game(): string;
+	set game(value: string);
+	get description(): string;
+	set description(value: string);
+	get processed(): number;
+	set processed(value: number);
+	get total(): number;
+	set total(value: number);
+	get fetching(): boolean;
+	set fetching(value: boolean);
 }
 
 interface Managers
 {
-	achievementManager: AchievementManager
+	achievementManager: AchievementManager;
 }
 
 interface EmuchievementsStateContext
@@ -40,7 +40,7 @@ interface EmuchievementsStateContext
 	settings: Settings,
 	loggedIn: Promise<boolean>,
 	refresh(): Promise<void>,
-	login(login: Login): Promise<void>
+	login(login: Login): Promise<void>;
 }
 
 
@@ -48,7 +48,7 @@ export class EmuchievementsState
 {
 	private _loadingData: LoadingData = new class implements LoadingData
 	{
-		private t = getTranslateFunc()
+		private t = getTranslateFunc();
 		private state: EmuchievementsState;
 
 		constructor(outer: EmuchievementsState)
@@ -73,7 +73,7 @@ export class EmuchievementsState
 			this._globalLoading = value;
 			this.state.notifyUpdate();
 		}
-		
+
 		private _errored = false;
 
 		get errored(): boolean
@@ -87,7 +87,7 @@ export class EmuchievementsState
 			this.state.notifyUpdate();
 		}
 
-		private _total =  0;
+		private _total = 0;
 
 		get total(): number
 		{
@@ -139,7 +139,7 @@ export class EmuchievementsState
 			this.state.notifyUpdate();
 		}
 
-		private _fetching =  true;
+		private _fetching = true;
 
 		get fetching(): boolean
 		{
@@ -164,7 +164,7 @@ export class EmuchievementsState
 
 	private readonly _managers: Managers = {
 		achievementManager: new AchievementManager(this)
-	}
+	};
 
 	public eventBus = new EventTarget();
 
@@ -194,7 +194,23 @@ export class EmuchievementsState
 
 	get apps(): Promise<number[]>
 	{
-		return (async () => (await getAllNonSteamAppIds()).filter((appId) => this._managers.achievementManager.isReady(appId)))();
+		return (async () =>
+			[... new Set((await getAllNonSteamAppOverview()))]
+				.sort((a, b) =>
+				{
+					if (a.display_name < b.display_name)
+					{
+						return -1;
+					}
+					if (a.display_name > b.display_name)
+					{
+						return 1;
+					}
+					return 0;
+				})
+				.map((overview) => overview.appid)
+				.filter((appId) => this._managers.achievementManager.isReady(appId))
+		)();
 	}
 
 	get serverAPI(): ServerAPI
@@ -203,15 +219,16 @@ export class EmuchievementsState
 	}
 
 	get settings(): Settings
-     {
+	{
 		return this._settings;
 	}
 	private _login: boolean = false;
 	get loggedIn(): Promise<boolean>
 	{
-		return (async () => {
+		return (async () =>
+		{
 			if (this._login === true) return true;
-			const authenticated = await this.serverAPI.fetchNoCors<{ body: string; status: number }>(`https://retroachievements.org/API/API_GetAchievementOfTheWeek.php?z=${this.settings.username}&y=${this.settings.api_key}`)
+			const authenticated = await this.serverAPI.fetchNoCors<{ body: string; status: number; }>(`https://retroachievements.org/API/API_GetAchievementOfTheWeek.php?z=${this.settings.username}&y=${this.settings.api_key}`);
 			if (authenticated.success)
 			{
 				this._login = authenticated.result.status === 200 && authenticated.result.body !== "Invalid API Key";
@@ -223,36 +240,45 @@ export class EmuchievementsState
 
 	async init(): Promise<void>
 	{
-		Promise.map(Object.values(this._managers), (async (manager: Manager) => {
-			await manager.init()
-		})).then(() => {
+		Promise.map(Object.values(this._managers), (async (manager: Manager) =>
+		{
+			await manager.init();
+		})).then(() =>
+		{
 			this.notifyUpdate();
 		});
 	}
 
 	async deinit(): Promise<void>
 	{
-		Promise.map(Object.values(this._managers), (async (manager: Manager) => {
-			await manager.deinit()
-		})).then(() => {
+		Promise.map(Object.values(this._managers), (async (manager: Manager) =>
+		{
+			await manager.deinit();
+		})).then(() =>
+		{
 			this.notifyUpdate();
 		});
+		await this.serverAPI.callPluginMethod<{}, void>("reset", {});
 
 	}
 
 	async refresh(): Promise<void>
 	{
-		Promise.map(Object.values(this._managers), (async (manager: Manager) => {
-			await manager.refresh()
-		})).then(() => {
+		Promise.map(Object.values(this._managers), (async (manager: Manager) =>
+		{
+			await manager.refresh();
+		})).then(() =>
+		{
 			this.notifyUpdate();
 		});
 	}
 
-	async login({username, api_key}: Login): Promise<void>
+	async login({ username, api_key }: Login): Promise<void>
 	{
-		this.settings.username = username
-		this.settings.api_key = api_key
+		this._login = false;
+		this.settings.username = username;
+		this.settings.api_key = api_key;
+		this.loggedIn;
 	}
 
 	notifyUpdate(): void
@@ -270,13 +296,15 @@ interface Props
 	emuchievementsState: EmuchievementsState;
 }
 
-export const EmuchievementsStateContextProvider: FC<Props> = ({children, emuchievementsState}) => {
-	const [publicEmuchievementsState, setPublicEmuchievementsState] = useState<EmuchievementsStateContext>({...emuchievementsState.state});
+export const EmuchievementsStateContextProvider: FC<Props> = ({ children, emuchievementsState }) =>
+{
+	const [publicEmuchievementsState, setPublicEmuchievementsState] = useState<EmuchievementsStateContext>({ ...emuchievementsState.state });
 
-	useEffect(() => {
+	useEffect(() =>
+	{
 		function onUpdate()
 		{
-			setPublicEmuchievementsState({...emuchievementsState.state});
+			setPublicEmuchievementsState({ ...emuchievementsState.state });
 		}
 
 		emuchievementsState.eventBus.addEventListener('update', onUpdate);
@@ -286,16 +314,17 @@ export const EmuchievementsStateContextProvider: FC<Props> = ({children, emuchie
 
 
 	return (
-		   <EmuchievementsStateContext.Provider
-				 value={{...publicEmuchievementsState}}
-		   >
-			   {children}
-		   </EmuchievementsStateContext.Provider>
+		<EmuchievementsStateContext.Provider
+			value={{ ...publicEmuchievementsState }}
+		>
+			{children}
+		</EmuchievementsStateContext.Provider>
 	);
 };
 
-export const EmuchievementsStateContextConsumer: FC<{children: (value: EmuchievementsStateContext) => ReactNode}> = ({children}) => {
+export const EmuchievementsStateContextConsumer: FC<{ children: (value: EmuchievementsStateContext) => ReactNode; }> = ({ children }) =>
+{
 	return <EmuchievementsStateContext.Consumer>
 		{children}
-	</EmuchievementsStateContext.Consumer>
-}
+	</EmuchievementsStateContext.Consumer>;
+};

@@ -1,30 +1,33 @@
-export const log = (name: string) => {
+export const log = (name: string) =>
+{
 	return console.log.bind(
-			   window.console,
-			   `%c Emuchievements %c ${name} %c`,
-			   'background: #16a085; color: black;',
-			   'background: #1abc9c; color: black;',
-			   'background: transparent;',
-		);
+		window.console,
+		`%c Emuchievements %c ${name} %c`,
+		'background: #16a085; color: black;',
+		'background: #1abc9c; color: black;',
+		'background: transparent;',
+	);
 };
 
-export const debug = (name: string) => {
+export const debug = (name: string) =>
+{
 	if (process.env.NODE_ENV === 'development')
 		return console.debug.bind(window.console,
-			   `%c Emuchievements %c ${name} %c`,
-			   'background: #16a085; color: black;',
-			   'background: #1abc9c; color: black;',
-			   'color: blue;');
-	else return function(..._: any[]){}
-}
+			`%c Emuchievements %c ${name} %c`,
+			'background: #16a085; color: black;',
+			'background: #1abc9c; color: black;',
+			'color: blue;');
+	else return function (..._: any[]) { };
+};
 
-export const error = (name: string) => {
-		return console.error.bind(window.console,
-			   `%c Emuchievements %c ${name} %c`,
-			   'background: #16a085; color: black;',
-			   'background: #FF0000;',
-			   'background: transparent;'
-		);
+export const error = (name: string) =>
+{
+	return console.error.bind(window.console,
+		`%c Emuchievements %c ${name} %c`,
+		'background: #16a085; color: black;',
+		'background: #FF0000;',
+		'background: transparent;'
+	);
 };
 
 class Logger

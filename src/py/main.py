@@ -52,7 +52,7 @@ class Plugin:
 			Plugin.buffer = ""
 			return config
 
-	async def Hash(self, path: str) -> str:
+	async def hash(self, path: str) -> str:
 		# lib = ctypes.CDLL(f"{helpers.get_homebrew_path(helpers.get_home_path(helpers.get_user()))}/plugins/{plugin}/bin/Emuchievements.so")
 		# hash = lib.hash
 		# hash.argtypes = [ctypes.c_char_p]
@@ -61,6 +61,11 @@ class Plugin:
 
 		return os.popen(
 			f"'{os.path.join(decky_plugin.DECKY_PLUGIN_DIR, 'bin', 'Emuchievements')}' \"{path}\"").read().strip()
+	
+	async def reset(self) -> None:
+		Plugin.length = 0
+		Plugin.buffer = ""
+		Plugin.packet_size = 1000
 
 	# Asyncio-compatible long-running code, executed in a task when the plugin is loaded
 	async def _main(self):
@@ -70,7 +75,6 @@ class Plugin:
 					"username": "",
 					"api_key": "",
 					"cache": {
-						"hashes": {},
 						"ids": {}
 					},
 					"hidden": False
