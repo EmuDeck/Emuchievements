@@ -316,7 +316,6 @@ export class AchievementManager implements Manager
 							}
 							this.achievements[app_id] = result;
 							this.logger.debug(`${app_id} result:`, result);
-							throw new Error("Test Error");
 							return result;
 							break;
 						} else
