@@ -312,27 +312,22 @@ export class AchievementManager implements Manager
 							if (result.game?.achievements?.length == 0)
 							{
 								return undefined;
-								break;
 							}
 							this.achievements[app_id] = result;
 							this.logger.debug(`${app_id} result:`, result);
 							return result;
-							break;
 						} else
 						{
 							return undefined;
-							break;
 						}
 					} else
 					{
 						this.logger.debug(`gameResponse: ${JSON.stringify(response, undefined, "\t")}`);
 						throw new Error(`${response.result.status}`);
-						break;
 					}
 				} else
 				{
 					throw new Error(response.result);
-					break;
 				}
 			}
 			throw new Error("Maximum retries exceeded");
@@ -474,108 +469,96 @@ export class AchievementManager implements Manager
 		| undefined
 	>
 	{
-		return new Promise<
-			| {
-				all: AllAchievements;
-				global: GlobalAchievements;
-				retro?: AchievementsData;
-			}
-			| undefined
-		>(async (resolve) =>
+		if (
+			!(
+				this.allAchievements[app_id] === undefined
+					? this.allAchievements[0]
+					: this.allAchievements[app_id]
+			).data
+		)
 		{
-			if (
-				!(
-					this.allAchievements[app_id] === undefined
-						? this.allAchievements[0]
-						: this.allAchievements[app_id]
-				).data
-			)
-			{
-				this.loading[app_id] = true;
-				resolve(
-					await this.throttle(() => this.achievements[app_id] ?? this.getAchievementsForGame(app_id))
-						.then(
-							(
-								retro?: AchievementsData
-							):
-								| {
-									all: AllAchievements;
-									global: GlobalAchievements;
-									retro: AchievementsData;
-								}
-								| undefined =>
-							{
-								let allAchievements: AllAchievements = {
-									data: {
-										achieved: {},
-										hidden: {},
-										unachieved: {},
-									},
-									loading: false,
-								};
-								let globalAchievements: GlobalAchievements = {
-									data: {},
-									loading: false,
-								};
-								this.logger.debug(`${app_id} Retro: `, retro);
-								if (retro && retro.game.achievements)
-								{
-									retro.game.achievements.forEach((achievement) =>
-									{
-										this.logger.debug("Achievement: ", achievement);
-										let steam = retroAchievementToSteamAchievement(
-											achievement,
-											retro.game
-										);
-										if (allAchievements.data && globalAchievements.data)
-										{
-											if (steam.bAchieved)
-												allAchievements.data.achieved[steam.strID] = steam;
-											else allAchievements.data.unachieved[steam.strID] = steam;
-
-											globalAchievements.data[steam.strID] =
-												((achievement.num_awarded ? achievement.num_awarded : 0) /
-													(retro.game.num_distinct_players_casual
-														? retro.game.num_distinct_players_casual
-														: 1)) *
-												100.0;
-										}
-									});
-									this.logger.debug(`${app_id} Achievements: `, allAchievements);
-									return {
-										all: allAchievements,
-										global: globalAchievements,
-										retro: retro,
-									};
-								} else return undefined;
-							}
-						)
-						.then((value) =>
+			this.loading[app_id] = true;
+			return await this.throttle(() => this.achievements[app_id] ?? this.getAchievementsForGame(app_id))
+				.then(
+					(
+						retro?: AchievementsData
+					):
+						| {
+							all: AllAchievements;
+							global: GlobalAchievements;
+							retro: AchievementsData;
+						}
+						| undefined =>
+					{
+						let allAchievements: AllAchievements = {
+							data: {
+								achieved: {},
+								hidden: {},
+								unachieved: {},
+							},
+							loading: false,
+						};
+						let globalAchievements: GlobalAchievements = {
+							data: {},
+							loading: false,
+						};
+						this.logger.debug(`${app_id} Retro: `, retro);
+						if (retro && retro.game.achievements)
 						{
-							if (value)
+							retro.game.achievements.forEach((achievement) =>
 							{
-								if (value.retro) this.achievements[app_id] = value.retro;
-								if (value.retro?.game_id) this.ids[app_id] = value.retro.game_id;
-								this.allAchievements[app_id] = value.all;
-								this.globalAchievements[app_id] = value.global;
-							}
-							this.loading[app_id] = false;
+								this.logger.debug("Achievement: ", achievement);
+								let steam = retroAchievementToSteamAchievement(
+									achievement,
+									retro.game
+								);
+								if (allAchievements.data && globalAchievements.data)
+								{
+									if (steam.bAchieved)
+										allAchievements.data.achieved[steam.strID] = steam;
+									else allAchievements.data.unachieved[steam.strID] = steam;
 
-							return value;
-						})
-				);
-			} else
-			{
-				resolve({
-					all: this.allAchievements[app_id],
-					global: this.globalAchievements[app_id],
-					retro: this.achievements[app_id],
+									globalAchievements.data[steam.strID] =
+										((achievement.num_awarded ? achievement.num_awarded : 0) /
+											(retro.game.num_distinct_players_casual
+												? retro.game.num_distinct_players_casual
+												: 1)) *
+										100.0;
+								}
+							});
+							this.logger.debug(`${app_id} Achievements: `, allAchievements);
+							return {
+								all: allAchievements,
+								global: globalAchievements,
+								retro: retro,
+							};
+						} else return undefined;
+					}
+				)
+				.then((value) =>
+				{
+					if (value)
+					{
+						if (value.retro) this.achievements[app_id] = value.retro;
+						if (value.retro?.game_id) this.ids[app_id] = value.retro.game_id;
+						this.allAchievements[app_id] = value.all;
+						this.globalAchievements[app_id] = value.global;
+					}
+					this.loading[app_id] = false;
+
+					return value;
 				});
-			}
-		});
+		} else
+		{
+			return {
+				all: this.allAchievements[app_id],
+				global: this.globalAchievements[app_id],
+				retro: this.achievements[app_id],
+			};
+		}
 	}
 
-	async refresh_achievements(): Promise<void>
+	async refreshAchievements(): Promise<void>
 	{
 		if (await this.state.loggedIn)
 		{
@@ -587,7 +570,7 @@ export class AchievementManager implements Manager
 				this.clearRuntimeCache();
 				try
 				{
-					await this.refresh_achievements_for_apps(
+					await this.refreshAchievementsForApps(
 						(await getAllNonSteamAppIds()).filter((appId) => this.ids[appId] !== null)
 					);
 				} catch (e: any)
@@ -606,14 +589,14 @@ export class AchievementManager implements Manager
 		}
 	}
 
-	async refresh_achievements_for_apps(app_ids: number[]): Promise<void>
+	async refreshAchievementsForApps(app_ids: number[]): Promise<void>
 	{
 		try
 		{
 			this.fetching = false;
 			this.total = app_ids.length;
 			this.processed = 0;
-			await Promise.map(app_ids, async (app_id) => await this.refresh_achievements_for_app(app_id), {
+			await Promise.map(app_ids, async (app_id) => await this.refreshAchievementsForApp(app_id), {
 				concurrency: 8,
 			});
 
@@ -628,7 +611,7 @@ export class AchievementManager implements Manager
 		}
 	}
 
-	private async refresh_achievements_for_app(app_id: number): Promise<void>
+	private async refreshAchievementsForApp(app_id: number): Promise<void>
 	{
 		try
 		{
@@ -637,7 +620,7 @@ export class AchievementManager implements Manager
 				const overview = appStore.GetAppOverviewByAppID(app_id);
 
 				const details = await getAppDetails(app_id);
-				const data = await this.count_achievements_for_app(app_id);
+				const data = await this.countAchievementsForApp(app_id);
 				if (details && data.numberOfAchievements !== 0)
 				{
 					this.game = overview.display_name;
@@ -662,7 +645,7 @@ export class AchievementManager implements Manager
 		}
 	}
 
-	async count_achievements_for_app(app_id: number): Promise<{ numberOfAchievements: number; hash?: string; }>
+	async countAchievementsForApp(app_id: number): Promise<{ numberOfAchievements: number; hash?: string; }>
 	{
 		try
 		{
@@ -722,7 +705,7 @@ export class AchievementManager implements Manager
 		}
 	}
 
-	async refresh_shortcuts(): Promise<void>
+	async refreshShortcuts(): Promise<void>
 	{
 		const shortcuts = await getAllNonSteamAppOverview();
 		const hidden = this.state.settings.hidden;
@@ -750,8 +733,8 @@ export class AchievementManager implements Manager
 
 	async refresh(): Promise<void>
 	{
-		await this.refresh_achievements();
-		await this.refresh_shortcuts();
+		await this.refreshAchievements();
+		await this.refreshShortcuts();
 	}
 
 	async init(): Promise<void>
