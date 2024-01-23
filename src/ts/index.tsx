@@ -24,13 +24,12 @@ import
 	SteamAppOverview
 } from "./SteamTypes";
 import { checkOnlineStatus, waitForOnline } from "./steam-utils";
-import { StoreCategory } from "./interfaces";
 import { EventBus, MountManager } from "./System";
 import { patchAppPage } from "./RoutePatches";
 import { runInAction } from "mobx";
 import { getTranslateFunc } from "./useTranslations";
 import { GameListComponent } from "./components/gameListComponent";
-
+import { StoreCategory } from "./AchievementsManager"
 declare global
 {
 	// @ts-ignore
@@ -130,9 +129,9 @@ export default definePlugin(function (serverAPI: ServerAPI)
 						logger.debug(data.global);
 						if (!data.global.loading)
 							Achievements.m_mapGlobalAchievements.set(args[0], data.global);
-						logger.debug(data.all);
-						if (!data.all.loading)
-							Achievements.m_mapMyAchievements.set(args[0], data.all);
+						logger.debug(data.user);
+						if (!data.user.loading)
+							Achievements.m_mapMyAchievements.set(args[0], data.user);
 						return;
 					}
 					return callOriginal;
@@ -172,17 +171,17 @@ export default definePlugin(function (serverAPI: ServerAPI)
 		{
 			appData.bLoadingAchievments = true;
 			const achievements = state.managers.achievementManager.fetchAchievements(appid);
-			if (achievements.all.data)
+			if (achievements.user.data)
 			{
-				const nAchieved = Object.keys(achievements.all.data.achieved).length;
-				const nTotal = Object.keys(achievements.all.data.achieved).length + Object.keys(achievements.all.data.unachieved).length;
+				const nAchieved = Object.keys(achievements.user.data.achieved).length;
+				const nTotal = Object.keys(achievements.user.data.achieved).length + Object.keys(achievements.user.data.unachieved).length;
 				const vecHighlight: SteamAppAchievement[] = [];
-				Object.entries(achievements.all.data.achieved).forEach(([, value]) =>
+				Object.entries(achievements.user.data.achieved).forEach(([, value]) =>
 				{
 					vecHighlight.push(value);
 				});
 				const vecUnachieved: SteamAppAchievement[] = [];
-				Object.entries(achievements.all.data.unachieved).forEach(([, value]) =>
+				Object.entries(achievements.user.data.unachieved).forEach(([, value]) =>
 				{
 					vecUnachieved.push(value);
 				});

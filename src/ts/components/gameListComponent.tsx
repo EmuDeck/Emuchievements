@@ -83,7 +83,7 @@ export const GameListComponent: VFC = () =>
 									height: '100%',
 									display: 'block',
 									borderRadius: 'var(--round-radius-size)',
-								}} src={achievements.data.game.image_icon} />
+								}} src={achievements.data.game.imageIcon} />
 								<Field
 									// label={appStore.GetAppOverviewByAppID(appId).display_name}
 									bottomSeparator={"none"}
@@ -117,7 +117,7 @@ export const GameListComponent: VFC = () =>
 				flexDirection: 'row'
 			}}
 		>
-			<Field label={"Current Game"} childrenContainerWidth={"max"}>{currentGame?.data.game.image_icon}</Field>
+			<Field label={"Current Game"} childrenContainerWidth={"max"}>{currentGame?.data.game.imageIcon}</Field>
 		</Focusable>
 
 	</Focusable>;

@@ -3,11 +3,16 @@ import { createContext, FC, ReactNode, useContext, useEffect, useState } from "r
 import { AchievementManager, Manager } from "../AchievementsManager";
 import { getAllNonSteamAppOverview } from "../steam-utils";
 import { Promise } from "bluebird";
-import { Login } from "../interfaces";
 import { Settings } from "../settings";
 import { getTranslateFunc } from "../useTranslations";
 
-interface LoadingData
+interface Login
+{
+	username: string,
+	api_key: string;
+}
+
+export interface LoadingData
 {
 	get percentage(): number;
 	get globalLoading(): boolean;

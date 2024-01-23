@@ -167,8 +167,8 @@ export async function checkOnlineStatus(serverAPI: ServerAPI)
 {
 	try
 	{
-		const online = await serverAPI.fetchNoCors<{ body: string; status: number; }>("https://google.com");
-		return online.success && online.result.status >= 200 && online.result.status < 300; // either true or false
+		const online = await serverAPI.fetchNoCors<{ body: string; status: number; }>("https://example.com");
+		return online.success && online.result.status >= 200; // either true or false
 	} catch (err)
 	{
 		return false; // definitely offline

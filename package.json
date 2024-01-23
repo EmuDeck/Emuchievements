@@ -36,6 +36,7 @@
 		"@types/lodash-es": "^4.14.184",
 		"@types/react": "16.14.0",
 		"@types/webpack": "^5.28.0",
+		"decky-frontend-lib": "3.24.4",
 		"mobx": "5",
 		"react-router": "^6.4.2",
 		"rollup": "^2.77.1",
@@ -43,12 +44,13 @@
 		"rollup-sourcemap-path-transform": "^1.0.3",
 		"shx": "^0.3.4",
 		"tslib": "^2.4.0",
-		"typescript": "^4.7.4"
+		"typescript": "^4.7.4",
+		"typescript-plugin-css-modules": "^5.0.2"
 	},
 	"dependencies": {
+		"@retroachievements/api": "1.4.0",
 		"async-mutex": "^0.4.0",
 		"bluebird": "^3.7.2",
-		"decky-frontend-lib": "^3.21.0",
 		"localforage": "^1.10.0",
 		"lodash-es": "^4.17.21",
 		"react-icons": "^4.4.0",
@@ -60,7 +62,8 @@
 		"peerDependencyRules": {
 			"ignoreMissing": [
 				"react",
-				"react-dom"
+				"react-dom",
+				"decky-frontend-lib"
 			]
 		}
 	}
