@@ -1,8 +1,8 @@
 {
 	"settingsTitle": "Configurações do Emuchievements",
 	"settingsGeneral": "Geral",
-	"settingsApps": "Apps",
-	"settingsHideShortcuts": "Ocultar atalhos",
+	"settingsGamePage": "Show in Game Page",
+	"settingsStoreCategory": "Add Store Category Icon",
 	"settingsRetroAchievements": "RetroAchievements",
 	"settingsInstructions": "Instruções",
 	"settingsInstructionsMD": "Para obter a sua chave de api, acesse [https://retroachievements.org/controlpanel.php](https://retroachievements. rg/controlpanel.php) e logue na sua conta. Você deverá ver a sua chave de api em uma das postagens desta página. Você pode digitar o código na caixa chave de api abaixo ou ir para o modo desktop e iniciar o Steam em modo de Big Picture para que você tenha acesso à área de transferência para cola-lo,",

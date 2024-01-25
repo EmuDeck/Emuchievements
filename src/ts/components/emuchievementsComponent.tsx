@@ -1,7 +1,6 @@
 import { CSSProperties, useEffect, useState, VFC } from "react";
 import
 {
-	ButtonItem,
 	Field,
 	Navigation,
 	PanelSection,
@@ -9,17 +8,13 @@ import
 	ProgressBarItem,
 	ProgressBarWithInfo
 } from "decky-frontend-lib";
-import { useEmuchievementsState, LoadingData } from "../hooks/achievementsContext";
+import { useEmuchievementsState } from "../hooks/achievementsContext";
 import { FaCog, FaSync, FaTrash } from "react-icons/fa";
 import { useTranslations } from "../useTranslations";
 import React from "react";
-import { wrapStyled } from "./styleWrapper";
+import { StyledButtonItem } from "./styleWrapper";
 
-const StyledButtonItem = wrapStyled(ButtonItem, {
-
-});
-
-const SettingsButton: VFC = () =>
+export const SettingsButton: VFC = () =>
 {
 	const t = useTranslations();
 
@@ -36,7 +31,7 @@ const SettingsButton: VFC = () =>
 	);
 };
 
-const RefreshButton: VFC = () =>
+export const RefreshButton: VFC = () =>
 {
 	const t = useTranslations();
 	const { refresh } = useEmuchievementsState();
@@ -53,7 +48,7 @@ const RefreshButton: VFC = () =>
 	);
 };
 
-const CacheButton: VFC = () =>
+export const CacheButton: VFC = () =>
 {
 	const t = useTranslations();
 	const { managers: { achievementManager } } = useEmuchievementsState();
@@ -71,14 +66,15 @@ const CacheButton: VFC = () =>
 	);
 };
 
-const ProgressBarDescription: VFC<{ loadingData: LoadingData; }> = ({ loadingData }) =>
+export const LoadingProgressBar: VFC = () =>
 {
 	const t = useTranslations();
+	const { loadingData } = useEmuchievementsState();
 	const [css, setCss] = useState<CSSProperties>();
 	useEffect(() =>
 	{
 		const def: CSSProperties = {
-			paddingLeft: "20px"
+			marginLeft: "20px"
 		};
 		if (loadingData.errored) 
 		{
@@ -87,25 +83,16 @@ const ProgressBarDescription: VFC<{ loadingData: LoadingData; }> = ({ loadingDat
 		setCss(def);
 	}, [loadingData]);
 	return (
-		<div style={css}>
-			{(loadingData.errored) ? <>{t("error")}<br /></> : undefined}
-			{loadingData.description}
-		</div>
-	);
-};
-
-const LoadingProgressBar: VFC = () =>
-{
-	const t = useTranslations();
-	const { loadingData } = useEmuchievementsState();
-	return (
 		<ProgressBarWithInfo
 			label={t("loading")}
 			layout="inline"
-			indentLevel={10}
 			bottomSeparator="none"
 			sOperationText={loadingData.game}
-			description={<ProgressBarDescription loadingData={loadingData} />}
+			description={
+				<div style={css} className="ProgressBarDescription_debug">
+					{(loadingData.errored) ? <>{t("error")}<br /></> : undefined}
+					{loadingData.description}
+				</div>}
 			nProgress={loadingData.percentage}
 			sTimeRemaining={!loadingData.fetching ? `${loadingData.processed}/${loadingData.total}` : ""}
 			indeterminate={loadingData.fetching}
@@ -113,7 +100,7 @@ const LoadingProgressBar: VFC = () =>
 	);
 };
 
-const GameList: VFC = () =>
+export const GameList: VFC = () =>
 {
 	const { apps, managers: { achievementManager } } = useEmuchievementsState();
 	const [appIds, setAppIds] = useState<number[]>();

@@ -4,14 +4,23 @@ import { EmuchievementsState } from "./hooks/achievementsContext";
 import Logger from "./logger";
 
 export type SettingsData = {
+	retroachievements: RetroAchievementsData,
+	cache: CacheData,
+	general: GeneralData,
+};
+
+export type RetroAchievementsData = {
 	username: string,
 	api_key: string,
-	cache: CacheData,
-	hidden: boolean;
 };
 
 export type CacheData = {
-	ids: Record<number, number | null>;
+	ids: Record<number, number | null>,
+};
+
+export type GeneralData = {
+	game_page: boolean,
+	store_category: boolean,
 };
 
 export class Settings
@@ -22,33 +31,26 @@ export class Settings
 	private readonly mutex: Mutex = new Mutex();
 	private readonly packet_size: number = 2048;
 
-	data: SettingsData = {
-		username: "",
-		api_key: "",
-		cache: {
-			ids: {}
-		},
-		hidden: false,
-	};
+	data: SettingsData;
 
-	get username(): string
+	get retroachievements(): RetroAchievementsData
 	{
-		return this.get("username");
+		return this.get("retroachievements");
 	}
 
-	set username(username: string)
+	set retroachievements(retroachievements: RetroAchievementsData)
 	{
-		this.set("username", username);
+		this.set("retroachievements", retroachievements);
 	}
 
-	get api_key(): string
+	get general(): GeneralData
 	{
-		return this.get("api_key");
+		return this.get("general");
 	}
 
-	set api_key(api_key: string)
+	set general(general: GeneralData)
 	{
-		this.set("api_key", api_key);
+		this.set("general", general);
 	}
 
 	get cache(): CacheData
@@ -56,28 +58,31 @@ export class Settings
 		return this.get("cache");
 	}
 
-	set cache(api_key: CacheData)
+	set cache(cache: CacheData)
 	{
-		this.set("cache", api_key);
-	}
-
-	get hidden(): boolean
-	{
-		return this.get("hidden");
-	}
-
-	set hidden(hidden: boolean)
-	{
-		this.set("hidden", hidden);
+		this.set("cache", cache);
 	}
 
 
-	constructor(serverAPI: ServerAPI, state: EmuchievementsState, startingSettings: SettingsData = {} as SettingsData)
+	constructor(serverAPI: ServerAPI, state: EmuchievementsState, startingSettings: SettingsData = {
+		retroachievements: {
+			username: "",
+			api_key: "",
+		},
+		cache: {
+			ids: {},
+		},
+		general: {
+			game_page: true,
+			store_category: true,
+		},
+
+	})
 	{
 		this.state = state;
 		this.serverAPI = serverAPI;
 
-		this.setMultiple(startingSettings);
+		this.data = startingSettings;
 	}
 
 	set<T extends keyof SettingsData>(key: T, value: SettingsData[T])
@@ -130,7 +135,18 @@ export class Settings
 			}
 			release();
 			this.logger.debug("readSettings", buffer);
-			this.data = JSON.parse(buffer);
+			const data = JSON.parse(buffer);
+			if ('username' in data && 'api_key' in data)
+			{
+				data.retroachievements = {
+					username: data.username,
+					api_key: data.api_key,
+				}
+				delete data.username;
+				delete data.api_key;
+			}
+			if ('hidden' in data) delete data.hidden;
+			this.setMultiple(data);
 		} else
 		{
 			release();

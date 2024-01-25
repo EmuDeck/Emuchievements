@@ -6,10 +6,7 @@ import
 {
 	checkOnlineStatus,
 	getAllNonSteamAppIds,
-	getAllNonSteamAppOverview,
 	getAppDetails,
-	hideApp,
-	showApp,
 	waitForOnline,
 } from "./steam-utils";
 import { AllAchievements, GlobalAchievements } from "./SteamTypes";
@@ -267,7 +264,7 @@ export class AchievementManager implements Manager
 	public async getAchievementsForGame(app_id: number): Promise<AchievementsData | undefined>
 	{
 		const settings = this.state.settings;
-		this.logger.debug(`${app_id} auth: `, settings.username, settings.api_key);
+		this.logger.debug(`${app_id} auth: `, settings.retroachievements.username, settings.retroachievements.api_key);
 		if (this.ids[app_id] === null) return undefined;
 		await waitForOnline(this.serverAPI);
 		const shortcut = await getAppDetails(app_id);
@@ -331,7 +328,7 @@ export class AchievementManager implements Manager
 					body: string;
 					status: number;
 				}>(
-					`https://retroachievements.org/API/API_GetGameInfoAndUserProgress.php?z=${settings.username}&y=${settings.api_key}&u=${settings.username}&g=${game_id}`,
+					`https://retroachievements.org/API/API_GetGameInfoAndUserProgress.php?z=${settings.retroachievements.username}&y=${settings.retroachievements.api_key}&u=${settings.retroachievements.username}&g=${game_id}`,
 					{
 						headers: {
 							"User-Agent": `Emuchievements/${process.env.VERSION} (+https://github.com/EmuDeck/Emuchievements)`,
@@ -712,36 +709,9 @@ export class AchievementManager implements Manager
 		}
 	}
 
-	async refreshShortcuts(): Promise<void>
-	{
-		const shortcuts = await getAllNonSteamAppOverview();
-		const hidden = this.state.settings.hidden;
-		this.logger.debug("hidden: ", hidden);
-		let app_ids: number[] = shortcuts.map((shortcut) => shortcut.appid).filter((appid) => this.isReady(appid));
-		for (const app_id of app_ids)
-		{
-			await showApp(app_id);
-		}
-
-		if (hidden)
-		{
-			for (const app_id of app_ids)
-			{
-				await hideApp(app_id);
-			}
-		} else
-		{
-			for (const app_id of app_ids)
-			{
-				await showApp(app_id);
-			}
-		}
-	}
-
 	async refresh(): Promise<void>
 	{
 		await this.refreshAchievements();
-		await this.refreshShortcuts();
 	}
 
 	async init(): Promise<void>

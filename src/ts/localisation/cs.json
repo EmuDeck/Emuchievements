@@ -1,8 +1,8 @@
 {
 	"settingsTitle": "Nastavení Emuchievements",
 	"settingsGeneral": "Obecné",
-	"settingsApps": "Aplikace",
-	"settingsHideShortcuts": "Skrýt zkratky",
+	"settingsGamePage": "Show in Game Page",
+	"settingsStoreCategory": "Add Store Category Icon",
 	"settingsRetroAchievements": "RetroAchievements",
 	"settingsInstructions": "Instrukce",
 	"settingsInstructionsMD": "Pro získání svého API klíče přejděte na [https://retroachievements.org/controlpanel.php](https://retroachievements.org/controlpanel.php) a přihlašte se ke svému účtu.\nVáš API klíč by měl být vidět v jedné z kolonek. API klíč buď přepište do pole níže, nebo přejděte do režimu plochy a spusťte Steam v režimu Big Picure, abyste mohli klíč zkopírovat do schránky a následně jej vložit.",
