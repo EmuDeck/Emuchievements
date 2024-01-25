@@ -4,34 +4,44 @@ import {EmuchievementsState} from "./hooks/achievementsContext";
 import Logger from "./logger";
 import {getTranslateFunc} from "./useTranslations";
 
-export interface SettingsData extends VersionedConfig
-{
-	username: string,
-	api_key: string,
+export type SettingsData = {
+	retroachievements: RetroAchievementsData,
 	cache: CacheData,
-	hidden: boolean
-}
-
-export interface VersionedConfig
-{
-	config_version: string;
-}
-
-export type CacheData = {
-	ids: Record<number, number | null>;
+	general: GeneralData,
+	config_version: string
 };
 
-export const CONFIG_VERSION = "1.0.0";
+export type RetroAchievementsData = {
+	username: string,
+	api_key: string,
+};
+
+export type CacheData = {
+	ids: Record<number, number | null>,
+};
+
+export type GeneralData = {
+	game_page: boolean,
+	store_category: boolean,
+};
+
+export const CONFIG_VERSION = "1.1.0";
 
 const DEFAULT_CONFIG: SettingsData = {
 	config_version: CONFIG_VERSION,
-	username: "",
-	api_key: "",
-	cache: {
-		ids: {}
+	retroachievements: {
+		username: "",
+		api_key: "",
 	},
-	hidden: false
+	cache: {
+		ids: {},
+	},
+	general: {
+		game_page: true,
+		store_category: true,
+	},
 };
+
 
 const findOldConfigKey = (config: any, search: string): any =>
 {
@@ -59,27 +69,26 @@ export class Settings
 	private readonly logger: Logger = new Logger("Settings");
 	private readonly mutex: Mutex = new Mutex();
 	private readonly packet_size: number = 2048;
-
 	data: SettingsData = JSON.parse(JSON.stringify(DEFAULT_CONFIG));
 
-	get username(): string
+	get retroachievements(): RetroAchievementsData
 	{
-		return this.get("username");
+		return this.get("retroachievements");
 	}
 
-	set username(username: string)
+	set retroachievements(retroachievements: RetroAchievementsData)
 	{
-		this.set("username", username);
+		this.set("retroachievements", retroachievements);
 	}
 
-	get api_key(): string
+	get general(): GeneralData
 	{
-		return this.get("api_key");
+		return this.get("general");
 	}
 
-	set api_key(api_key: string)
+	set general(general: GeneralData)
 	{
-		this.set("api_key", api_key);
+		this.set("general", general);
 	}
 
 	get cache(): CacheData
@@ -87,28 +96,18 @@ export class Settings
 		return this.get("cache");
 	}
 
-	set cache(api_key: CacheData)
+	set cache(cache: CacheData)
 	{
-		this.set("cache", api_key);
-	}
-
-	get hidden(): boolean
-	{
-		return this.get("hidden");
-	}
-
-	set hidden(hidden: boolean)
-	{
-		this.set("hidden", hidden);
+		this.set("cache", cache);
 	}
 
 
-	constructor(serverAPI: ServerAPI, state: EmuchievementsState, startingSettings: SettingsData = {} as SettingsData)
+	constructor(serverAPI: ServerAPI, state: EmuchievementsState, startingSettings: SettingsData)
 	{
 		this.state = state;
 		this.serverAPI = serverAPI;
 
-		this.setMultiple(startingSettings);
+		this.data = startingSettings;
 	}
 
 	set<T extends keyof SettingsData>(key: T, value: SettingsData[T])
@@ -171,13 +170,14 @@ export class Settings
 					title: t("title"),
 					body: t("settingsReset")
 				});
+
 				const username: string = findOldConfigKey(data, "username")
 				const api_key: string = findOldConfigKey(data, "api_key")
 
 				this.data = JSON.parse(JSON.stringify(DEFAULT_CONFIG));
 
-				this.data.username = username
-				this.data.api_key = api_key
+				this.data.retroachievements.username = username
+				this.data.retroachievements.api_key = api_key
 
 				await this.writeSettings();
 			} else

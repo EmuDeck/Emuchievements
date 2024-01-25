@@ -1,33 +1,30 @@
-import React, {
-	FunctionComponent,
-	useContext,
+import {
+	FC,
 	useRef,
 	VFC
 } from "react";
 import
-	{
-		ButtonItem,
-		Field,
-		Focusable,
-		PanelSection, PanelSectionRow,
-		SidebarNavigation,
-		TextField,
-		ToggleField,
-		SteamSpinner,
-		Navigation
-	} from "decky-frontend-lib";
-import { hideApp, showApp } from "../steam-utils";
-import { EmuchievementsStateContext } from "../hooks/achievementsContext";
+{
+	Field,
+	Focusable,
+	PanelSection, PanelSectionRow,
+	SidebarNavigation,
+	TextField,
+	ToggleField,
+	Navigation
+} from "decky-frontend-lib";
+import { useEmuchievementsState } from "../hooks/achievementsContext";
 import { ReactMarkdown, ReactMarkdownOptions } from "react-markdown/lib/react-markdown";
 import remarkGfm from "remark-gfm";
 import { useTranslations } from "../useTranslations";
+import { StyledButtonItem } from "./styleWrapper";
 
 interface MarkdownProps extends ReactMarkdownOptions
 {
 	onDismiss?: () => void;
 }
 
-const Markdown: FunctionComponent<MarkdownProps> = (props) =>
+const Markdown: FC<MarkdownProps> = (props) =>
 {
 	return (
 		<Focusable>
@@ -65,74 +62,64 @@ const Markdown: FunctionComponent<MarkdownProps> = (props) =>
 const GeneralSettings: VFC = () =>
 {
 	const t = useTranslations();
-	const { serverAPI, loadingData, apps, loggedIn, login, settings } = useContext(EmuchievementsStateContext);
+	const { settings } = useEmuchievementsState();
 	return (<div style={{
 		marginTop: '40px',
 		height: 'calc( 100% - 40px )',
 	}}>
-		{loadingData.globalLoading ? <PanelSectionRow>
-			<SteamSpinner />
-		</PanelSectionRow> :
-			<>
-				<PanelSection title={t("settingsApps")}>
-					<PanelSectionRow>
-						<Field label={t("settingsHideShortcuts")}>
-							<ToggleField checked={settings.hidden} onChange={async checked =>
-							{
-								settings.hidden = checked;
-								await serverAPI.callPluginMethod<{ hidden: boolean; }, {}>("Hidden", { hidden: checked });
-								if (checked)
-								{
-									(await apps)?.forEach(appId =>
-									{
-										hideApp(appId);
-									});
-								} else
-								{
-									(await apps)?.forEach(appId =>
-									{
-										showApp(appId);
-									});
-								}
-							}} />
-						</Field>
-					</PanelSectionRow>
-				</PanelSection>
-				<PanelSection title={t("settingsRetroAchievements")}>
-					<PanelSectionRow>
-						<Field label={t("settingsInstructions")}>
-							<Markdown>
-								{t("settingsInstructionsMD")}
-							</Markdown>
-						</Field>
-					</PanelSectionRow>
-					<Focusable>
-						<TextField label={t("settingsUsername")} value={settings.username}
-							onChange={({ target: { value } }) => settings.username = value} />
-					</Focusable>
-					<Focusable>
-						<TextField label={t("settingsAPIKey")} value={settings.api_key}
-							onChange={({ target: { value } }) => settings.api_key = value} />
-					</Focusable>
-					<ButtonItem onClick={
-						async () =>
-						{
-							await login({
-								username: settings.username,
-								api_key: settings.api_key,
-							});
-							serverAPI.toaster.toast({
-								title: t("title"),
-								body: await loggedIn ? t("loginSuccess") : t("loginFailed")
-							});
-						}}>
-						Login
-					</ButtonItem>
-				</PanelSection>
-			</>
-		}
-	</div>
-	);
+		<PanelSection title={t("settingsGeneral")}>
+			<PanelSectionRow>
+				<ToggleField label={t("settingsGamePage")} checked={settings.general.game_page} 
+				onChange={async (checked) => {settings.general.game_page = checked; await settings.writeSettings()}}/>
+			</PanelSectionRow>
+			<PanelSectionRow>
+				<ToggleField label={t("settingsStoreCategory")} checked={settings.general.store_category}
+				onChange={async (checked) => {settings.general.store_category = checked; await settings.writeSettings()}}/>
+			</PanelSectionRow>
+		</PanelSection>
+	</div>);
+};
+
+const RetroAchievementsSettings: VFC = () =>
+{
+	const t = useTranslations();
+	const { serverAPI, loadingData, loggedIn, login, settings } = useEmuchievementsState();
+	return (<div style={{
+		marginTop: '40px',
+		height: 'calc( 100% - 40px )',
+	}}>
+		<PanelSection title={t("settingsRetroAchievements")}>
+			<PanelSectionRow>
+				<Field label={t("settingsInstructions")}>
+					<Markdown>
+						{t("settingsInstructionsMD")}
+					</Markdown>
+				</Field>
+			</PanelSectionRow>
+			<Focusable>
+				<TextField label={t("settingsUsername")} value={settings.retroachievements.username} disabled={loadingData.globalLoading}
+					onChange={({ target: { value } }) => settings.retroachievements.username = value} />
+			</Focusable>
+			<Focusable>
+				<TextField label={t("settingsAPIKey")} value={settings.retroachievements.api_key} bIsPassword={true} disabled={loadingData.globalLoading}
+					onChange={({ target: { value } }) => settings.retroachievements.api_key = value} />
+			</Focusable>
+			<StyledButtonItem disabled={loadingData.globalLoading} onClick={
+				async () =>
+				{
+					await login({
+						username: settings.retroachievements.username,
+						api_key: settings.retroachievements.api_key,
+					});
+					serverAPI.toaster.toast({
+						title: t("title"),
+						body: await loggedIn ? t("loginSuccess") : t("loginFailed")
+					});
+				}}>
+				Login
+			</StyledButtonItem>
+		</PanelSection>
+	</div>);
 };
 
 export const SettingsComponent: VFC = () =>
@@ -143,6 +130,11 @@ export const SettingsComponent: VFC = () =>
 			title: t("settingsGeneral"),
 			content: <GeneralSettings />,
 			route: '/general',
+		},
+		{
+			title: t("settingsRetroAchievements"),
+			content: <RetroAchievementsSettings />,
+			route: '/retroachievements'
 		}
 	]} />;
 };

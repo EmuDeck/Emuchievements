@@ -153,7 +153,7 @@ export default definePlugin(function (serverAPI: ServerAPI)
 					if ((this as SteamAppOverview).app_type == 1073741824)
 					{
 						// @ts-ignore
-						if (state.managers.achievementManager.isReady((this as SteamAppOverview).appid) && args[0] === StoreCategory.Achievements)
+						if (state.settings.general.store_category && state.managers.achievementManager.isReady((this as SteamAppOverview).appid) && args[0] === StoreCategory.Achievements)
 						{
 							return true;
 						}
@@ -255,7 +255,7 @@ export default definePlugin(function (serverAPI: ServerAPI)
 							"GetSections",
 							(_: Record<string, unknown>[], ret3: Set<string>) =>
 							{
-								if (state.managers.achievementManager.isReady(overview.appid)) ret3.add("achievements");
+								if (state.settings.general.game_page && state.managers.achievementManager.isReady(overview.appid)) ret3.add("achievements");
 								else ret3.delete("achievements");
 								logger.debug(`${overview.appid} Sections: `, ret3);
 								return ret3;
