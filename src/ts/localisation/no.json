@@ -10,6 +10,7 @@
 	"settingsAPIKey": "Api-nøkkel: ",
 	"loginSuccess": "Innlogging vellykket",
 	"loginFailed": "Innloggingen mislyktes",
+	"settingsReset": "Settings JSON schema has changed, resetting JSON",
 	"title": "Emuchievements",
 	"settings": "Innstillinger",
 	"achievements": "Prestasjoner",

@@ -10,6 +10,7 @@
 	"settingsAPIKey": "Api Key: ",
 	"loginSuccess": "Вход выполнен",
 	"loginFailed": "Не удалось войти",
+	"settingsReset": "Settings JSON schema has changed, resetting JSON",
 	"title": "Emuchievements",
 	"settings": "Настройки",
 	"achievements": "Достижения",

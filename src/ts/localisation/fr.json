@@ -10,6 +10,7 @@
 	"settingsAPIKey": "Clé Api: ",
 	"loginSuccess": "Connection Réussie",
 	"loginFailed": "Connexion Echouée",
+	"settingsReset": "Settings JSON schema has changed, resetting JSON",
 	"title": "Emuchievements",
 	"settings": "Paramètres",
 	"achievements": "Succès",

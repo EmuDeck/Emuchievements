@@ -10,6 +10,7 @@
 	"settingsAPIKey": "Api Key: ",
 	"loginSuccess": "¡Inicio de Sesión exitoso!",
 	"loginFailed": "Error al iniciar sesión",
+	"settingsReset": "Settings JSON schema has changed, resetting JSON",
 	"title": "Emuchievements",
 	"settings": "Configuración",
 	"achievements": "Logros",

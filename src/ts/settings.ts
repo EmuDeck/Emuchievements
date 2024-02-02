@@ -2,17 +2,21 @@ import { Mutex } from "async-mutex";
 import { ServerAPI } from "decky-frontend-lib";
 import { EmuchievementsState } from "./hooks/achievementsContext";
 import Logger from "./logger";
+import {getTranslateFunc} from "./useTranslations";
 
 export type SettingsData = {
+	config_version: string,
 	username: string,
 	api_key: string,
 	cache: CacheData,
-	hidden: boolean;
+	hidden: boolean
 };
 
 export type CacheData = {
 	ids: Record<number, number | null>;
 };
+
+export const CONFIG_VERSION = "1.0.0"
 
 export class Settings
 {
@@ -23,6 +27,7 @@ export class Settings
 	private readonly packet_size: number = 2048;
 
 	data: SettingsData = {
+		config_version: CONFIG_VERSION,
 		username: "",
 		api_key: "",
 		cache: {
@@ -130,7 +135,19 @@ export class Settings
 			}
 			release();
 			this.logger.debug("readSettings", buffer);
-			this.data = JSON.parse(buffer);
+			let data: SettingsData = JSON.parse(buffer);
+			if (data.config_version !== CONFIG_VERSION)
+			{
+				const t = getTranslateFunc()
+				this.serverAPI.toaster.toast({
+					title: t("title"),
+					body: t("settingsReset")
+				})
+				await this.writeSettings()
+			} else
+			{
+				this.data = data
+			}
 		} else
 		{
 			release();

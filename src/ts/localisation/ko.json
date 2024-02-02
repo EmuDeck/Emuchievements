@@ -10,6 +10,7 @@
 	"settingsAPIKey": "Api 키: ",
 	"loginSuccess": "로그인 성공",
 	"loginFailed": "로그인 실패",
+	"settingsReset": "Settings JSON schema has changed, resetting JSON",
 	"title": "Emuchievements",
 	"settings": "설정",
 	"achievements": "도전과제",
