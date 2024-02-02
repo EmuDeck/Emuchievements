@@ -1,6 +1,6 @@
-import { Mutex } from "async-mutex";
-import { ServerAPI } from "decky-frontend-lib";
-import { EmuchievementsState } from "./hooks/achievementsContext";
+import {Mutex} from "async-mutex";
+import {ServerAPI} from "decky-frontend-lib";
+import {EmuchievementsState} from "./hooks/achievementsContext";
 import Logger from "./logger";
 import {getTranslateFunc} from "./useTranslations";
 
@@ -16,7 +16,17 @@ export type CacheData = {
 	ids: Record<number, number | null>;
 };
 
-export const CONFIG_VERSION = "1.0.0"
+export const CONFIG_VERSION = "1.0.0";
+
+const DEFAULT_CONFIG: SettingsData = {
+	config_version: CONFIG_VERSION,
+	username: "",
+	api_key: "",
+	cache: {
+		ids: {}
+	},
+	hidden: false
+};
 
 export class Settings
 {
@@ -26,15 +36,7 @@ export class Settings
 	private readonly mutex: Mutex = new Mutex();
 	private readonly packet_size: number = 2048;
 
-	data: SettingsData = {
-		config_version: CONFIG_VERSION,
-		username: "",
-		api_key: "",
-		cache: {
-			ids: {}
-		},
-		hidden: false,
-	};
+	data: SettingsData = JSON.parse(JSON.stringify(DEFAULT_CONFIG));
 
 	get username(): string
 	{
@@ -115,7 +117,9 @@ export class Settings
 		const release = await this.mutex.acquire();
 		let buffer = "";
 		let length = 0;
-		const startResponse = await this.serverAPI.callPluginMethod<{ packet_size?: number; }, number>("start_read_config", { packet_size: this.packet_size });
+		const startResponse = await this.serverAPI.callPluginMethod<{ packet_size?: number; }, number>(
+			   "start_read_config",
+			   {packet_size: this.packet_size});
 		if (startResponse.success)
 		{
 			length = startResponse.result;
@@ -123,7 +127,7 @@ export class Settings
 			{
 				const response = await this.serverAPI.callPluginMethod<{
 					index: number;
-				}, string>("read_config", { index: i });
+				}, string>("read_config", {index: i});
 				if (response.success)
 				{
 					buffer += response.result;
@@ -138,15 +142,16 @@ export class Settings
 			let data: SettingsData = JSON.parse(buffer);
 			if (data.config_version !== CONFIG_VERSION)
 			{
-				const t = getTranslateFunc()
+				const t = getTranslateFunc();
 				this.serverAPI.toaster.toast({
 					title: t("title"),
 					body: t("settingsReset")
-				})
-				await this.writeSettings()
+				});
+				this.data = JSON.parse(JSON.stringify(DEFAULT_CONFIG));
+				await this.writeSettings();
 			} else
 			{
-				this.data = data
+				this.data = data;
 			}
 		} else
 		{
@@ -163,7 +168,7 @@ export class Settings
 		const startResponse = await this.serverAPI.callPluginMethod<{
 			length: number,
 			packet_size?: number;
-		}, void>("start_write_config", { length: length, packet_size: this.packet_size });
+		}, void>("start_write_config", {length: length, packet_size: this.packet_size});
 		if (startResponse.success)
 		{
 			for (let i = 0; i < length; i++)
@@ -172,7 +177,7 @@ export class Settings
 				const response = await this.serverAPI.callPluginMethod<{
 					index: number,
 					data: string;
-				}, void>("write_config", { index: i, data: data });
+				}, void>("write_config", {index: i, data: data});
 				if (!response.success)
 				{
 					release();
