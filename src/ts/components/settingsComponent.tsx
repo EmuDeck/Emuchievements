@@ -1,8 +1,9 @@
-import {
-	FC,
-	useRef,
-	VFC
-} from "react";
+import
+	{
+		FC,
+		useRef,
+		VFC
+	} from "react";
 import
 {
 	Field,
@@ -69,12 +70,12 @@ const GeneralSettings: VFC = () =>
 	}}>
 		<PanelSection title={t("settingsGeneral")}>
 			<PanelSectionRow>
-				<ToggleField label={t("settingsGamePage")} checked={settings.general.game_page} 
-				onChange={async (checked) => {settings.general.game_page = checked; await settings.writeSettings()}}/>
+				<ToggleField label={t("settingsGamePage")} checked={settings.general.game_page}
+					onChange={async (checked) => { settings.general.game_page = checked; await settings.writeSettings(); }} />
 			</PanelSectionRow>
 			<PanelSectionRow>
 				<ToggleField label={t("settingsStoreCategory")} checked={settings.general.store_category}
-				onChange={async (checked) => {settings.general.store_category = checked; await settings.writeSettings()}}/>
+					onChange={async (checked) => { settings.general.store_category = checked; await settings.writeSettings(); }} />
 			</PanelSectionRow>
 		</PanelSection>
 	</div>);
@@ -96,28 +97,30 @@ const RetroAchievementsSettings: VFC = () =>
 					</Markdown>
 				</Field>
 			</PanelSectionRow>
-			<Focusable>
+			<PanelSectionRow>
 				<TextField label={t("settingsUsername")} value={settings.retroachievements.username} disabled={loadingData.globalLoading}
 					onChange={({ target: { value } }) => settings.retroachievements.username = value} />
-			</Focusable>
-			<Focusable>
+			</PanelSectionRow>
+			<PanelSectionRow>
 				<TextField label={t("settingsAPIKey")} value={settings.retroachievements.api_key} bIsPassword={true} disabled={loadingData.globalLoading}
 					onChange={({ target: { value } }) => settings.retroachievements.api_key = value} />
-			</Focusable>
-			<StyledButtonItem disabled={loadingData.globalLoading} onClick={
-				async () =>
-				{
-					await login({
-						username: settings.retroachievements.username,
-						api_key: settings.retroachievements.api_key,
-					});
-					serverAPI.toaster.toast({
-						title: t("title"),
-						body: await loggedIn ? t("loginSuccess") : t("loginFailed")
-					});
-				}}>
-				Login
-			</StyledButtonItem>
+			</PanelSectionRow>
+			<PanelSectionRow>
+				<StyledButtonItem disabled={loadingData.globalLoading} onClick={
+					async () =>
+					{
+						await login({
+							username: settings.retroachievements.username,
+							api_key: settings.retroachievements.api_key,
+						});
+						serverAPI.toaster.toast({
+							title: t("title"),
+							body: await loggedIn ? t("loginSuccess") : t("loginFailed")
+						});
+					}}>
+					Login
+				</StyledButtonItem>
+			</PanelSectionRow>
 		</PanelSection>
 	</div>);
 };
