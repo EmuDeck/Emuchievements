@@ -1,8 +1,8 @@
 {
 	"settingsTitle": "Paramètres Emuchievements",
 	"settingsGeneral": "Général",
-	"settingsGamePage": "Show in Game Page",
-	"settingsStoreCategory": "Add Store Category Icon",
+	"settingsApps": "Apps",
+	"settingsHideShortcuts": "Hide Shortcuts",
 	"settingsRetroAchievements": "RetroAchievements",
 	"settingsInstructions": "Consignes",
 	"settingsInstructionsMD": "Pour obtenir votre clé api, rendez-vous sur [https://retroachievements.org/controlpanel.php](https://retroachievements. rg/controlpanel.php) et connectez-vous à votre compte. Vous devriez voir votre clé api au sein d'une des entrées de la page. Tapez directement votre clé api dans le champ ci-dessous ou basculez en mode bureau et démarrez Steam en mode big picture pour que vous ayez accès au presse-papiers et collez-la,",
@@ -10,6 +10,7 @@
 	"settingsAPIKey": "Clé Api: ",
 	"loginSuccess": "Connection Réussie",
 	"loginFailed": "Connexion Echouée",
+	"settingsReset": "Settings JSON schema has changed, resetting JSON",
 	"title": "Emuchievements",
 	"settings": "Paramètres",
 	"achievements": "Succès",
