@@ -1,8 +1,8 @@
 {
 	"settingsTitle": "Настройки Emuchievements",
 	"settingsGeneral": "Общее",
-	"settingsGamePage": "Show in Game Page",
-	"settingsStoreCategory": "Add Store Category Icon",
+	"settingsApps": "Apps",
+	"settingsHideShortcuts": "Hide Shortcuts",
 	"settingsRetroAchievements": "RetroAchievements",
 	"settingsInstructions": "Указания",
 	"settingsInstructionsMD": "Чтобы получить свой ключ API, перейдите по ссылке [https://retroachievements.org/controlpanel.php](https://retroachievements.org/controlpanel.php) и войдите в свой аккаунт. Там вы увидите свой ключ API. Либо введите его в поле \"api key\", либо перейдите в режим рабочего стола, запустите steam в режиме big picture, чтобы у вас был доступ к буферу обмена, и вставьте его в поле,",
@@ -10,6 +10,7 @@
 	"settingsAPIKey": "Api Key: ",
 	"loginSuccess": "Вход выполнен",
 	"loginFailed": "Не удалось войти",
+	"settingsReset": "Settings JSON schema has changed, resetting JSON",
 	"title": "Emuchievements",
 	"settings": "Настройки",
 	"achievements": "Достижения",
