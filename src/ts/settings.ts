@@ -1,16 +1,21 @@
 import {Mutex} from "async-mutex";
-import {ServerAPI} from "decky-frontend-lib";
+import {findInTree, ServerAPI} from "decky-frontend-lib";
 import {EmuchievementsState} from "./hooks/achievementsContext";
 import Logger from "./logger";
 import {getTranslateFunc} from "./useTranslations";
 
-export type SettingsData = {
-	config_version: string,
+export interface SettingsData extends VersionedConfig
+{
 	username: string,
 	api_key: string,
 	cache: CacheData,
 	hidden: boolean
-};
+}
+
+export interface VersionedConfig
+{
+	config_version: string;
+}
 
 export type CacheData = {
 	ids: Record<number, number | null>;
@@ -27,6 +32,25 @@ const DEFAULT_CONFIG: SettingsData = {
 	},
 	hidden: false
 };
+
+const findOldConfigKey = (config: any, search: string): any =>
+{
+	return findInTree(config, (x: any) =>
+		   {
+			   if (typeof x == "object")
+			   {
+				   for (let key in x)
+				   {
+					   if (key == search)
+					   {
+						   return true
+					   }
+				   }
+			   }
+			   return false
+		   }
+		   , {})[search];
+}
 
 export class Settings
 {
@@ -147,7 +171,14 @@ export class Settings
 					title: t("title"),
 					body: t("settingsReset")
 				});
+				const username: string = findOldConfigKey(data, "username")
+				const api_key: string = findOldConfigKey(data, "api_key")
+
 				this.data = JSON.parse(JSON.stringify(DEFAULT_CONFIG));
+
+				this.data.username = username
+				this.data.api_key = api_key
+
 				await this.writeSettings();
 			} else
 			{
