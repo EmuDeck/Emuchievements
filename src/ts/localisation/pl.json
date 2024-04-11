@@ -1,8 +1,8 @@
 {
 	"settingsTitle": "Ustawienia Emuchievements",
 	"settingsGeneral": "Ogólne",
-	"settingsApps": "Apps",
-	"settingsHideShortcuts": "Hide Shortcuts",
+	"settingsGamePage": "Show in Game Page",
+	"settingsStoreCategory": "Add Store Category Icon",
 	"settingsRetroAchievements": "RetroAchievements",
 	"settingsInstructions": "Instrukcje",
 	"settingsInstructionsMD": "Aby uzyskać klucz api, przejdź do [https://retroachievements.org/controlpanel.php](https://retroachievings. rg/controlpanel.php) i zaloguj się na swoje konto. Powinieneś zobaczyć swój klucz api w jednym z wpisów na tej stronie. Wpisz go w poniższym polu lub przejdź do trybu pulpitu i uruchom Steam w trybie Big Picture, dzięki czemu będziesz miał dostęp do schowka i wklej go,",
