@@ -3,175 +3,97 @@
 //
 
 #include <filesystem>
-#include <iostream>
+#include <archive.h>
+#include <archive_entry.h>
 #include "util.h"
-#include "miniz_common.h"
-#include "miniz_zip.h"
 
+static int copy_data(struct archive *ar, struct archive *aw) {
+    int r;
+    const void *buff;
+    size_t size;
+    off_t offset;
 
-void* util::loadZippedFile(const std::string &path, size_t* size, std::string &unzippedFileName)
-{
-	mz_bool status;
-	mz_zip_archive zip_archive;
-	mz_zip_archive_file_stat file_stat;
-	void* data;
-	int file_count;
-
-	memset(&zip_archive, 0, sizeof(zip_archive));
-
-	status = mz_zip_reader_init_file(&zip_archive, path.c_str(), 0);
-	if (!status)
-	{
-//		log_errno(logger, "opening", path.c_str());
-		return NULL;
-	}
-
-	file_count = mz_zip_reader_get_num_files(&zip_archive);
-	if (file_count == 0)
-	{
-		mz_zip_reader_end(&zip_archive);
-//			logger->error(TAG "Empty zip file \"%s\"", path.c_str());
-		return NULL;
-	}
-
-	if (file_count > 1)
-	{
-		mz_zip_reader_end(&zip_archive);
-//			logger->error(TAG "Zip file \"%s\" contains %d files, determining which to open is not supported - returning entire zip file", path.c_str(), file_count);
-		return loadFile(path, size);
-	}
-
-	if (mz_zip_reader_is_file_a_directory(&zip_archive, 0))
-	{
-		mz_zip_reader_end(&zip_archive);
-//			logger->error(TAG "Zip file \"%s\" only contains a directory", path.c_str());
-		return NULL;
-	}
-
-	if (!mz_zip_reader_file_stat(&zip_archive, 0, &file_stat))
-	{
-		mz_zip_reader_end(&zip_archive);
-//			logger->error(TAG "Error opening file in \"%s\"", path.c_str());
-		return NULL;
-	}
-
-	*size = (size_t) file_stat.m_uncomp_size;
-	data = malloc(*size);
-
-	status = mz_zip_reader_extract_to_mem(&zip_archive, 0, data, *size, 0);
-	if (!status)
-	{
-		mz_zip_reader_end(&zip_archive);
-//			log_errno(logger, "decompressing file in", path.c_str());
-		free(data);
-		return NULL;
-	}
-
-	unzippedFileName = file_stat.m_filename;
-//		logger->info(TAG "Read %zu bytes from \"%s\":\"%s\"", *size, path.c_str(), file_stat.m_filename);
-	mz_zip_reader_end(&zip_archive);
-	return data;
+    for (;;) {
+        r = archive_read_data_block(ar, &buff, &size, &offset);
+        if (r == ARCHIVE_EOF)
+            return (ARCHIVE_OK);
+        if (r < ARCHIVE_OK)
+            return (r);
+        r = archive_write_data_block(aw, buff, size, offset);
+        if (r < ARCHIVE_OK) {
+            fprintf(stderr, "%s\n", archive_error_string(aw));
+            return (r);
+        }
+    }
 }
 
-void* util::loadFile(const std::string &path, size_t* size)
-{
-	FILE* file = fopen(path.c_str(), "rb");
-	if (file == NULL)
-		return NULL;
+std::filesystem::path util::extract(const std::string &archivePath) {
+    char template_path[] = "/tmp/tmpdir.XXXXXX";
+    std::string unzippedPath = std::string(mkdtemp(template_path)) + "/";
+    struct archive *a;
+    struct archive *ext;
+    struct archive_entry *entry;
+    int flags;
+    int r;
+    bool failed = false;
+    std::filesystem::path *default_file = nullptr;
 
-	fseek(file, 0, SEEK_END);
-	*size = ftell(file);
+    /* Select which attributes we want to restore. */
+    flags = ARCHIVE_EXTRACT_TIME;
+    flags |= ARCHIVE_EXTRACT_PERM;
+    flags |= ARCHIVE_EXTRACT_ACL;
+    flags |= ARCHIVE_EXTRACT_FFLAGS;
 
-	void* data = malloc(*size + 1);
-	if (data == NULL)
-	{
-		fclose(file);
-//		logger->error(TAG "Out of memory allocating %lu bytes to load \"%s\"", *size, path.c_str());
-		return NULL;
-	}
+    a = archive_read_new();
+	archive_read_support_filter_all(a);
+	archive_read_support_format_all(a);
+    ext = archive_write_disk_new();
+    archive_write_disk_set_options(ext, flags);
+    archive_write_disk_set_standard_lookup(ext);
+    if ((archive_read_open_filename(a, archivePath.c_str(), 10240)))
+        failed = true;
+    if (!failed)
+        for (;;) {
+            r = archive_read_next_header(a, &entry);
+            if (r == ARCHIVE_EOF)
+                break;
+            if (r < ARCHIVE_OK)
+                fprintf(stderr, "%s\n", archive_error_string(a));
+            if (r < ARCHIVE_WARN) {
+                failed = true;
+                break;
+            }
+            std::filesystem::path path = unzippedPath +
+                    archive_entry_pathname(entry);
+            if (default_file == nullptr)
+                default_file = new std::filesystem::path(path);
+            archive_entry_set_pathname(entry, path.c_str());
+            r = archive_write_header(ext, entry);
+            if (r < ARCHIVE_OK)
+                fprintf(stderr, "%s\n", archive_error_string(ext));
+            else if (archive_entry_size(entry) > 0) {
+                r = copy_data(a, ext);
+                if (r < ARCHIVE_OK)
+                    fprintf(stderr, "%s\n", archive_error_string(a));
+                if (r < ARCHIVE_WARN) {
+                    failed = true;
+                    break;
+                }
 
-	fseek(file, 0, SEEK_SET);
-	size_t numread = fread(data, 1, *size, file);
-	fclose(file);
-
-	if (numread < 0 || numread != *size)
-	{
-//		log_errno(logger, "reading", path.c_str());
-		free(data);
-		return NULL;
-	}
-
-	*((uint8_t*) data + *size) = 0;
-//	logger->info(TAG "Read %zu bytes from \"%s\"", *size, path.c_str());
-	return data;
-}
-
-std::filesystem::path util::unzip(const std::string &zipPath)
-{
-	char template_path[] = "/tmp/tmpdir.XXXXXX";
-	std::string unzippedPath(mkdtemp(template_path));
-	mz_zip_archive zip_archive;
-	memset(&zip_archive, 0, sizeof(zip_archive));
-	mz_zip_reader_init_file(&zip_archive, zipPath.c_str(), 0);
-	std::string* default_file = nullptr;
-	for (int i = 0; i < (int) mz_zip_reader_get_num_files(&zip_archive); i++)
-	{
-		mz_zip_archive_file_stat file_stat;
-		if (!mz_zip_reader_file_stat(&zip_archive, i, &file_stat))
-		{
-			mz_zip_reader_end(&zip_archive);
-			break;
-		}
-		if (default_file == nullptr && (std::filesystem::path(file_stat.m_filename).extension() == ".cue" || (i == 0 && (i + 1) == (int) mz_zip_reader_get_num_files(&zip_archive))))
-		{
-			default_file = new std::string(file_stat.m_filename);
-		}
-		else if (default_file == nullptr && i >= 1)
-		{
-			default_file = nullptr;
-			break;
-		}
-
-		mz_zip_reader_extract_file_to_file(&zip_archive, file_stat.m_filename,
-		                                            std::filesystem::path(unzippedPath.c_str()).append(
-				                                            file_stat.m_filename).c_str(), 0);
-	}
-	mz_zip_reader_end(&zip_archive);
-	std::filesystem::path ret;
-	ret = std::filesystem::path(unzippedPath);
-	if (default_file != nullptr)
-	{
-		ret = ret.append(default_file->c_str());
-	}
-	delete default_file;
-	return ret;
-}
-
-bool util::unzipFile(const std::string &zipPath, const std::string &archiveFileName, const std::string &unzippedPath)
-{
-	mz_bool status;
-	mz_zip_archive zip_archive;
-	memset(&zip_archive, 0, sizeof(zip_archive));
-
-	status = mz_zip_reader_init_file(&zip_archive, zipPath.c_str(), 0);
-	if (!status)
-	{
-//		log_errno(logger, "opening", zipPath.c_str());
-	}
-	else
-	{
-		status = mz_zip_reader_extract_file_to_file(&zip_archive, archiveFileName.c_str(), unzippedPath.c_str(), 0);
-		if (!status)
-		{
-//			log_errno(logger, "decompressing file in", zipPath.c_str());
-		}
-		else
-		{
-//			logger->error(TAG "Unzipped \"%s\" from \"%s\":\"%s\"", unzippedPath.c_str(), zipPath.c_str(), archiveFileName.c_str());
-		}
-
-		mz_zip_reader_end(&zip_archive);
-	}
-
-	return status;
+            }
+            r = archive_write_finish_entry(ext);
+            if (r < ARCHIVE_OK)
+                fprintf(stderr, "%s\n", archive_error_string(ext));
+            if (r < ARCHIVE_WARN) {
+                failed = true;
+                break;
+            }
+        }
+    archive_read_close(a);
+    archive_read_free(a);
+    archive_write_close(ext);
+    archive_write_free(ext);
+    if (failed) return unzippedPath;
+    if (default_file != nullptr) return {default_file->c_str()};
+    return {unzippedPath.c_str()};
 }

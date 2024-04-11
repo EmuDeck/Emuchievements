@@ -1,13 +1,13 @@
 //
 // Created by witherking25 on 1/10/23.
 //
+
 #include <rc_hash.h>
 
 #include <libchdr/chd.h>
 
 #include <memory.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cstdlib>
 #include "HashCHD.h"
 
 typedef struct chd_track_handle_t

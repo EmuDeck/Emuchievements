@@ -60,7 +60,7 @@ class Plugin:
 		# return hash(path.encode('utf-8'))
 
 		return os.popen(
-			f"'{os.path.join(decky_plugin.DECKY_PLUGIN_DIR, 'bin', 'Emuchievements')}' \"{path}\"").read().strip()
+			f"'{os.path.join(decky_plugin.DECKY_PLUGIN_DIR, 'bin', 'hash')}' \"{path}\"").read().strip()
 	
 	async def reset(self) -> None:
 		Plugin.length = 0
