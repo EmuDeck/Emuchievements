@@ -102,12 +102,10 @@ export class Settings
 	}
 
 
-	constructor(serverAPI: ServerAPI, state: EmuchievementsState, startingSettings: SettingsData)
+	constructor(serverAPI: ServerAPI, state: EmuchievementsState)
 	{
 		this.state = state;
 		this.serverAPI = serverAPI;
-
-		this.data = startingSettings;
 	}
 
 	set<T extends keyof SettingsData>(key: T, value: SettingsData[T])
