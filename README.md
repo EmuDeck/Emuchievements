@@ -1,6 +1,8 @@
 # Emuchievements 
 [![Crowdin](https://badges.crowdin.net/emuchievements/localized.svg)](https://crowdin.com/project/emuchievements)
 
+![Decky Loader](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fplugins.deckbrew.xyz%2Fplugins&query=%24%5B%3F(%40.name%20%3D%3D%20'Emuchievements')%5D.downloads&suffix=%20installs&label=decky&color=3ea6a3)
+
 Decky Loader Steam Deck Plugin for viewing RetroAchievements progress.
 
 ## Building
