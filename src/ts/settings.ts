@@ -16,8 +16,15 @@ export type RetroAchievementsData = {
 	api_key: string,
 };
 
+export type CustomIdsOverrides = {
+	name: string | null,
+	hash?: string | null,
+	retro_achivement_game_id: number | null,
+}
+
 export type CacheData = {
 	ids: Record<number, number | null>,
+	custom_ids_overrides: Record<number, CustomIdsOverrides>,
 };
 
 export type GeneralData = {
@@ -35,6 +42,7 @@ const DEFAULT_CONFIG: SettingsData = {
 	},
 	cache: {
 		ids: {},
+		custom_ids_overrides: {},
 	},
 	general: {
 		game_page: true,
