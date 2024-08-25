@@ -14,7 +14,7 @@ import { Promise } from "bluebird";
 import { runInAction } from "mobx";
 import { format, getTranslateFunc } from "./useTranslations";
 import throttledQueue from "throttled-queue";
-import { CacheData } from "./settings";
+import { CacheData, CustomIdsOverrides } from "./settings";
 import { GameInfoAndUserProgress as Game, GetGameInfoAndUserProgressResponse as GameRaw } from "@retroachievements/api";
 
 // localforage.config({
@@ -194,6 +194,7 @@ export class AchievementManager implements Manager
 
 	private cache: CacheData = {
 		ids: {},
+		custom_ids_overrides: {},
 	};
 
 	private hashes: Record<string, number> = {};
@@ -206,6 +207,14 @@ export class AchievementManager implements Manager
 	private set ids(value: Record<number, number | null>)
 	{
 		this.cache.ids = value;
+	}
+
+	private get customIdsOverrides() {
+		return this.cache.custom_ids_overrides;
+	}
+
+	private set customIdsOverrides(value: Record<number, CustomIdsOverrides>) {
+		this.cache.custom_ids_overrides = value;
 	}
 
 	private achievements: Record<number, AchievementsData> = {};
@@ -237,13 +246,17 @@ export class AchievementManager implements Manager
 	public clearCache()
 	{
 		this.clearRuntimeCache();
+
 		this.ids = {};
+		this.customIdsOverrides = {};
 	}
 
 	public clearCacheForAppId(appId: number)
 	{
 		this.clearRuntimeCacheForAppId(appId);
+
 		delete this.ids[appId];
+		delete this.customIdsOverrides[appId];
 	}
 
 	public async saveCache()
@@ -277,27 +290,74 @@ export class AchievementManager implements Manager
 			this.logger.debug(`${app_id} rom: `, rom);
 			if (rom)
 			{
-				const md5 = await this.serverAPI.callPluginMethod<
-					{
-						path: string;
-					},
-					string
-				>("hash", { path: rom });
-				this.logger.debug(`${app_id} md5: `, md5.result);
-				if (md5.success)
-				{
-					if (md5.result === "")
-					{
-						this.ids[app_id] = null;
-						await this.saveCache();
-						return undefined;
-					} else
-					{
-						this.ids[app_id] = this.hashes[md5.result];
-						hash = md5.result;
-						await this.saveCache();
+				if (!this.customIdsOverrides) {
+					this.customIdsOverrides = {}
+
+					await this.saveCache();
+				}
+
+				if (!this.customIdsOverrides[app_id]) {
+					this.ids[app_id] = null;
+					this.customIdsOverrides[app_id] = {
+						name: shortcut.strDisplayName,
+						retro_achivement_game_id: null,
 					}
-				} else throw new Error(md5.result);
+
+					await this.saveCache();
+				}
+
+				if (this.customIdsOverrides[app_id] && this.customIdsOverrides[app_id]?.retro_achivement_game_id) {
+					const { retro_achivement_game_id } = this.customIdsOverrides[app_id]
+					this.ids[app_id] = retro_achivement_game_id
+
+					const getAppMd5Hash = () => {
+						const { hash } = this.customIdsOverrides[app_id]
+
+						if (typeof hash === 'string') {
+							return hash
+						}
+
+						return Object.keys(this.hashes).find((md5) => this.hashes[md5] === retro_achivement_game_id);
+					}
+
+					const appMd5Hash = getAppMd5Hash();
+
+					if (appMd5Hash) {
+						hash = appMd5Hash
+
+						// NOTE: If app does not have detected `hash` we save one, to improve performance in
+						// future detects
+						if (!this.customIdsOverrides[app_id]?.hash) {
+							this.customIdsOverrides[app_id].hash = appMd5Hash;
+						}
+
+						this.ids[app_id] = this.hashes[hash];
+					}
+
+					await this.saveCache();
+				} else {
+					const md5 = await this.serverAPI.callPluginMethod<
+						{
+							path: string;
+						},
+						string
+					>("hash", { path: rom });
+					this.logger.debug(`${app_id} md5: `, md5.result);
+					if (md5.success)
+					{
+						if (md5.result === "")
+						{
+							this.ids[app_id] = null;
+							await this.saveCache();
+							return undefined;
+						} else
+						{
+							this.ids[app_id] = this.hashes[md5.result];
+							hash = md5.result;
+							await this.saveCache();
+						}
+					} else throw new Error(md5.result);
+				}
 			} else
 			{
 				this.ids[app_id] = null;
@@ -588,6 +648,8 @@ export class AchievementManager implements Manager
 			this.globalLoading = false;
 			this.errored = true;
 			this.description = `${e.constructor.name}: ${e.message}`;
+
+			this.logger.error(e, `${e.constructor.name}: ${e.message}`);
 		}
 	}
 
