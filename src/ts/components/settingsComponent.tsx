@@ -186,15 +186,37 @@ const CustomIdsOverrides: VFC = () => {
 		for (const app of appsToAdd) {
 			const { appId, retroAchievementAppId } = app;
 
-			if (!appId || !retroAchievementAppId) {
+			if (!appId) {
 				continue
 			}
 
-			const appIdAsNumber = Number.parseInt(appId)
+			const appIdAsNumber = Number.parseInt(appId);
+
+			if (!retroAchievementAppId) {
+				emuchievementsState.settings.data.cache.custom_ids_overrides[appIdAsNumber] = {
+					...emuchievementsState.settings.data.cache.custom_ids_overrides[appIdAsNumber],
+					retro_achivement_game_id: null,
+					hash: null,
+				}
+
+				continue;
+			}
+
+			const retroAchievementAppIdAsNumber = Number.parseInt(retroAchievementAppId);
+
+			if (Number.isNaN(retroAchievementAppIdAsNumber) || retroAchievementAppIdAsNumber <= 0) {
+				emuchievementsState.settings.data.cache.custom_ids_overrides[appIdAsNumber] = {
+					...emuchievementsState.settings.data.cache.custom_ids_overrides[appIdAsNumber],
+					retro_achivement_game_id: null,
+					hash: null,
+				}
+
+				continue
+			}
 
 			emuchievementsState.settings.data.cache.custom_ids_overrides[appIdAsNumber] = {
 				...emuchievementsState.settings.data.cache.custom_ids_overrides[appIdAsNumber],
-				retro_achivement_game_id: Number.parseInt(retroAchievementAppId)
+				retro_achivement_game_id: Number.parseInt(retroAchievementAppId),
 			};
 		}
 
@@ -205,7 +227,7 @@ const CustomIdsOverrides: VFC = () => {
 		setTableRows([...tableRows, {
 			appId: undefined,
 			retroAchievementAppId: undefined,
-		}])
+		}]);
 	}
 
 	const t = useTranslations();
