@@ -16,8 +16,25 @@ export type RetroAchievementsData = {
 	api_key: string,
 };
 
+export type CustomIdsOverrides = {
+	/**
+	 * Game name
+	 */
+	name: string | null,
+	/**
+	 * RetroAchievements supported game files hash.
+	 * Can be found on URL: `https://retroachievements.org/game/xyz/hashes` where `xyz` is Game ID
+	 */
+	hash?: string | null,
+	/**
+	 * RetroAchievement Game ID.
+	 */
+	retro_achivement_game_id: number | null,
+}
+
 export type CacheData = {
 	ids: Record<number, number | null>,
+	custom_ids_overrides: Record<number, CustomIdsOverrides>,
 };
 
 export type GeneralData = {
@@ -35,6 +52,7 @@ const DEFAULT_CONFIG: SettingsData = {
 	},
 	cache: {
 		ids: {},
+		custom_ids_overrides: {},
 	},
 	general: {
 		game_page: true,

@@ -14,7 +14,7 @@ import { Promise } from "bluebird";
 import { runInAction } from "mobx";
 import { format, getTranslateFunc } from "./useTranslations";
 import throttledQueue from "throttled-queue";
-import { CacheData } from "./settings";
+import { CacheData, CustomIdsOverrides } from "./settings";
 import { GameInfoAndUserProgress as Game, GetGameInfoAndUserProgressResponse as GameRaw } from "@retroachievements/api";
 
 // localforage.config({
@@ -24,7 +24,7 @@ import { GameInfoAndUserProgress as Game, GetGameInfoAndUserProgressResponse as 
 
 // const romRegex = "(\\/([a-zA-Z\\d-:_.\\s])+)+(?!\\.AppImage)(\\.zip|\\.7z|\\.iso|\\.bin|\\.chd|\\.cue|\\.img|\\.a26|\\.lnx|\\.ngp|\\.ngc|\\.3dsx|\\.3ds|\\.app|\\.axf|\\.cci|\\.cxi|\\.elf|\\.n64|\\.ndd|\\.u1|\\.v64|\\.z64|\\.nds|\\.dmg|\\.gbc|\\.gba|\\.gb|\\.ciso|\\.dol|\\.gcm|\\.gcz|\\.nkit\\.iso|\\.rvz|\\.wad|\\.wia|\\.wbfs|\\.nes|\\.fds|\\.unif|\\.unf|\\.json|\\.kp|\\.nca|\\.nro|\\.nso|\\.nsp|\\.xci|\\.rpx|\\.wud|\\.wux|\\.wua|\\.32x|\\.cdi|\\.gdi|\\.m3u|\\.gg|\\.gen|\\.md|\\.smd|\\.sms|\\.ecm\\|.mds|\\.pbp|\\.dump|\\.gz|\\.mdf|\\.mrg|\\.prx|\\.bs|\\.fig|\\.sfc|\\.smc|\\.swx|\\.pc2|\\.wsc|\\.ws)";
 const romRegex =
-	'(\\/([^/"])+)+(?!\\.AppImage)(\\.zip|\\.7z|\\.iso|\\.bin|\\.chd|\\.cue|\\.img|\\.a26|\\.lnx|\\.ngp|\\.ngc|\\.elf|\\.n64|\\.ndd|\\.u1|\\.v64|\\.z64|\\.nds|\\.dmg|\\.gbc|\\.gba|\\.gb|\\.ciso|\\.cso|\\.rom|\\.nes|\\.fds|\\.unif|\\.unf|\\.32x|\\.cdi|\\.gdi|\\.m3u|\\.gg|\\.gen|\\.md|\\.smd|\\.sms|\\.ecm|\\.mds|\\.pbp|\\.dump|\\.gz|\\.mdf|\\.mrg|\\.prx|\\.bs|\\.fig|\\.sfc|\\.smc|\\.swx|\\.pc2|\\.wsc|\\.ws)';
+	'(\\/([^/"])+)+(?!\\.AppImage)(\\.zip|\\.7z|\\.iso|\\.bin|\\.chd|\\.cue|\\.img|\\.a26|\\.lnx|\\.ngp|\\.ngc|\\.elf|\\.n64|\\.ndd|\\.u1|\\.v64|\\.z64|\\.nds|\\.dmg|\\.gbc|\\.gba|\\.gb|\\.ciso|\\.cso|\\.rom|\\.nes|\\.fds|\\.unif|\\.unf|\\.32x|\\.cdi|\\.gdi|\\.m3u|\\.gg|\\.gen|\\.smd|\\.sms|\\.ecm|\\.mds|\\.pbp|\\.dump|\\.gz|\\.mdf|\\.mrg|\\.prx|\\.bs|\\.fig|\\.sfc|\\.smc|\\.swx|\\.pc2|\\.wsc|\\.ws|\\.md)';
 
 export interface Manager
 {
@@ -194,6 +194,7 @@ export class AchievementManager implements Manager
 
 	private cache: CacheData = {
 		ids: {},
+		custom_ids_overrides: {},
 	};
 
 	private hashes: Record<string, number> = {};
@@ -206,6 +207,14 @@ export class AchievementManager implements Manager
 	private set ids(value: Record<number, number | null>)
 	{
 		this.cache.ids = value;
+	}
+
+	private get customIdsOverrides() {
+		return this.cache.custom_ids_overrides;
+	}
+
+	private set customIdsOverrides(value: Record<number, CustomIdsOverrides>) {
+		this.cache.custom_ids_overrides = value;
 	}
 
 	private achievements: Record<number, AchievementsData> = {};
@@ -237,13 +246,17 @@ export class AchievementManager implements Manager
 	public clearCache()
 	{
 		this.clearRuntimeCache();
+
 		this.ids = {};
+		this.customIdsOverrides = {};
 	}
 
 	public clearCacheForAppId(appId: number)
 	{
 		this.clearRuntimeCacheForAppId(appId);
+
 		delete this.ids[appId];
+		delete this.customIdsOverrides[appId];
 	}
 
 	public async saveCache()
@@ -264,11 +277,16 @@ export class AchievementManager implements Manager
 	{
 		const settings = this.state.settings;
 		this.logger.debug(`${app_id} auth: `, settings.retroachievements.username, settings.retroachievements.api_key);
-		if (this.ids[app_id] === null) return undefined;
+
+		if (this.ids[app_id] === null && (this.customIdsOverrides[app_id] && this.customIdsOverrides[app_id]?.retro_achivement_game_id === null)) {
+			return undefined;
+		};
+
 		await waitForOnline(this.serverAPI);
 		const shortcut = await getAppDetails(app_id);
 		this.logger.debug(`${app_id} shortcut: `, shortcut);
 		let hash: string | null = null;
+
 		if (shortcut)
 		{
 			const launchCommand = `${shortcut.strShortcutExe} ${shortcut.strShortcutLaunchOptions}`;
@@ -277,27 +295,74 @@ export class AchievementManager implements Manager
 			this.logger.debug(`${app_id} rom: `, rom);
 			if (rom)
 			{
-				const md5 = await this.serverAPI.callPluginMethod<
-					{
-						path: string;
-					},
-					string
-				>("hash", { path: rom });
-				this.logger.debug(`${app_id} md5: `, md5.result);
-				if (md5.success)
-				{
-					if (md5.result === "")
-					{
-						this.ids[app_id] = null;
-						await this.saveCache();
-						return undefined;
-					} else
-					{
-						this.ids[app_id] = this.hashes[md5.result];
-						hash = md5.result;
-						await this.saveCache();
+				if (!this.customIdsOverrides) {
+					this.customIdsOverrides = {}
+
+					await this.saveCache();
+				}
+
+				if (!this.customIdsOverrides[app_id]) {
+					this.ids[app_id] = null;
+					this.customIdsOverrides[app_id] = {
+						name: shortcut.strDisplayName,
+						retro_achivement_game_id: null,
 					}
-				} else throw new Error(md5.result);
+
+					await this.saveCache();
+				}
+
+				if (this.customIdsOverrides[app_id] && this.customIdsOverrides[app_id]?.retro_achivement_game_id) {
+					const { retro_achivement_game_id } = this.customIdsOverrides[app_id]
+					this.ids[app_id] = retro_achivement_game_id
+
+					const getAppMd5Hash = () => {
+						const { hash } = this.customIdsOverrides[app_id]
+
+						if (typeof hash === 'string') {
+							return hash
+						}
+
+						return Object.keys(this.hashes).find((md5) => this.hashes[md5] === retro_achivement_game_id);
+					}
+
+					const appMd5Hash = getAppMd5Hash();
+
+					if (appMd5Hash) {
+						hash = appMd5Hash
+
+						// NOTE: If app does not have detected `hash` we save one, to improve performance in
+						// future detects
+						if (!this.customIdsOverrides[app_id]?.hash) {
+							this.customIdsOverrides[app_id].hash = appMd5Hash;
+						}
+
+						this.ids[app_id] = this.hashes[hash];
+					}
+
+					await this.saveCache();
+				} else {
+					const md5 = await this.serverAPI.callPluginMethod<
+						{
+							path: string;
+						},
+						string
+					>("hash", { path: rom });
+					this.logger.debug(`${app_id} md5: `, md5.result);
+					if (md5.success)
+					{
+						if (md5.result === "")
+						{
+							this.ids[app_id] = null;
+							await this.saveCache();
+							return undefined;
+						} else
+						{
+							this.ids[app_id] = this.hashes[md5.result];
+							hash = md5.result;
+							await this.saveCache();
+						}
+					} else throw new Error(md5.result);
+				}
 			} else
 			{
 				this.ids[app_id] = null;
@@ -571,10 +636,32 @@ export class AchievementManager implements Manager
 					this.fetching = true;
 					this.clearRuntimeCache();
 
-					await this.refreshAchievementsForApps(
-						(await getAllNonSteamAppIds()).filter((appId) => this.ids[appId] !== null)
-					);
+					const allNonSteamAppIds = await getAllNonSteamAppIds();
+					const nonSteamAppIdsWithRetroAchievementId = allNonSteamAppIds.filter((appId) => {
+							if (this.ids[appId] !== null) {
+								return true;
+							}
 
+							if (this.customIdsOverrides[appId] && this.customIdsOverrides[appId].retro_achivement_game_id !== null) {
+								return true;
+							}
+
+							return false;
+						})
+
+					// NOTE: Checks for games what does not exists in user library and removes them from
+					//       `cache` configuration
+					const gameIdsToBeRemoved = Object.keys(this.customIdsOverrides)
+						.filter((appId) => !allNonSteamAppIds.includes(Number.parseInt(appId, 10)));
+
+					for (const gameIdToBeRemoved of gameIdsToBeRemoved) {
+						const gameIdToBeRemovedAsNumber = Number.parseInt(gameIdToBeRemoved, 10);
+
+						delete this.ids[gameIdToBeRemovedAsNumber]
+						delete this.customIdsOverrides[gameIdToBeRemovedAsNumber]
+					}
+
+					await this.refreshAchievementsForApps(nonSteamAppIdsWithRetroAchievementId);
 				}
 			} else
 			{
@@ -588,6 +675,8 @@ export class AchievementManager implements Manager
 			this.globalLoading = false;
 			this.errored = true;
 			this.description = `${e.constructor.name}: ${e.message}`;
+
+			this.logger.error(e, `${e.constructor.name}: ${e.message}`);
 		}
 	}
 
