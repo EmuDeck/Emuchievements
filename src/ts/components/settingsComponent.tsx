@@ -1,5 +1,6 @@
 import
 	{
+		ChangeEvent,
 		FC,
 		useEffect,
 		useRef,
@@ -89,6 +90,25 @@ const RetroAchievementsSettings: VFC = () =>
 {
 	const t = useTranslations();
 	const { serverAPI, loadingData, loggedIn, login, settings } = useEmuchievementsState();
+	const [loginData , setLoginData] = useState({
+		username: '',
+		api_key: '',
+	});
+
+	const onInputChange = (event: ChangeEvent<HTMLInputElement>, inputName: 'username' | 'api_key') => {
+		setLoginData((value) => ({
+			...value,
+			[inputName]: event.target.value,
+		}));
+	}
+
+	useEffect(() => {
+		setLoginData({
+			username: settings.retroachievements.username,
+			api_key: settings.retroachievements.api_key
+		})
+	}, []);
+
 	return (<div style={{
 		marginTop: '40px',
 		height: 'calc( 100% - 40px )',
@@ -101,22 +121,37 @@ const RetroAchievementsSettings: VFC = () =>
 					</Markdown>
 				</Field>
 			</PanelSectionRow>
+
 			<PanelSectionRow>
-				<TextField label={t("settingsUsername")} value={settings.retroachievements.username} disabled={loadingData.globalLoading}
-					onChange={({ target: { value } }) => settings.retroachievements.username = value} />
+				<TextField
+					label={t("settingsUsername")}
+					value={loginData.username}
+					disabled={loadingData.globalLoading}
+					onChange={(event) => onInputChange(event, 'username')}
+				/>
 			</PanelSectionRow>
+
 			<PanelSectionRow>
-				<TextField label={t("settingsAPIKey")} value={settings.retroachievements.api_key} bIsPassword={true} disabled={loadingData.globalLoading}
-					onChange={({ target: { value } }) => settings.retroachievements.api_key = value} />
+				<TextField
+					label={t("settingsAPIKey")}
+					value={loginData.api_key}
+					bIsPassword={true}
+					disabled={loadingData.globalLoading}
+					onChange={(event) => onInputChange(event, 'api_key')}
+				/>
 			</PanelSectionRow>
+
 			<PanelSectionRow>
 				<StyledButtonItem disabled={loadingData.globalLoading} onClick={
 					async () =>
 					{
+						const { username, api_key } = loginData;
+
 						await login({
-							username: settings.retroachievements.username,
-							api_key: settings.retroachievements.api_key,
+							username,
+							api_key,
 						});
+
 						serverAPI.toaster.toast({
 							title: t("title"),
 							body: await loggedIn ? t("loginSuccess") : t("loginFailed")
@@ -308,3 +343,4 @@ export const SettingsComponent: VFC = () =>
 			content: <CustomIdsOverrides />,
 		}
 	]} />;
+}
