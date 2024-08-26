@@ -649,6 +649,17 @@ export class AchievementManager implements Manager
 							return false;
 						})
 
+					// NOTE: Checks for games what does not exists in user library and removes them from
+					//       `cache` configuration
+					const gameIdsToBeRemoved = Object.keys(this.customIdsOverrides)
+						.filter((appId) => !allNonSteamAppIds.includes(Number.parseInt(appId, 10)));
+
+					for (const gameIdToBeRemoved of gameIdsToBeRemoved) {
+						const gameIdToBeRemovedAsNumber = Number.parseInt(gameIdToBeRemoved, 10);
+
+						delete this.ids[gameIdToBeRemovedAsNumber]
+						delete this.customIdsOverrides[gameIdToBeRemovedAsNumber]
+					}
 
 					await this.refreshAchievementsForApps(nonSteamAppIdsWithRetroAchievementId);
 				}

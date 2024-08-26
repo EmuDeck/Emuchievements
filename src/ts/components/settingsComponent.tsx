@@ -154,7 +154,7 @@ const CustomIdsOverrides: VFC = () => {
 	const { custom_ids_overrides }= emuchievementsState.settings.data.cache;
 	const gameOptions = Object.keys(custom_ids_overrides)
 		.map((item) => {
-			const idAsNumber = Number.parseInt(item);
+			const idAsNumber = Number.parseInt(item, 10);
 			const currentApp = custom_ids_overrides[idAsNumber];
 
 			return {
@@ -190,7 +190,7 @@ const CustomIdsOverrides: VFC = () => {
 				continue
 			}
 
-			const appIdAsNumber = Number.parseInt(appId);
+			const appIdAsNumber = Number.parseInt(appId, 10);
 
 			if (!retroAchievementAppId) {
 				emuchievementsState.settings.data.cache.custom_ids_overrides[appIdAsNumber] = {
@@ -202,7 +202,7 @@ const CustomIdsOverrides: VFC = () => {
 				continue;
 			}
 
-			const retroAchievementAppIdAsNumber = Number.parseInt(retroAchievementAppId);
+			const retroAchievementAppIdAsNumber = Number.parseInt(retroAchievementAppId, 10);
 
 			if (Number.isNaN(retroAchievementAppIdAsNumber) || retroAchievementAppIdAsNumber <= 0) {
 				emuchievementsState.settings.data.cache.custom_ids_overrides[appIdAsNumber] = {
