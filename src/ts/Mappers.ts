@@ -23,7 +23,7 @@ export function retroAchievementToSteamAchievement(achievement: Achievement, gam
 				.replace("?", "")
 				.replace(".", "")
 			: "",
-		strImage: `https://media.retroachievements.org/Badge/${!!(achievement.badgeName) ? achievement.badgeName : "0"}.png`,
+		strImage: achievement.dateEarned ? `https://media.retroachievements.org/Badge/${!!(achievement.badgeName) ? achievement.badgeName : "0"}.png` : `https://media.retroachievements.org/Badge/${!!(achievement.badgeName) ? achievement.badgeName : "0"}_lock.png`,
 		strName: (achievement.title) ? ((achievement.dateEarnedHardcore ? "[HARDCORE] " : (achievement.dateEarned ? "[ACHIEVED] " : "[NOT ACHIEVED] ")) + (achievement.title.includes("[m]") ? "[MISSABLE] " : "") + achievement.title.replace("[m]", "")) : "",
 	};
 }

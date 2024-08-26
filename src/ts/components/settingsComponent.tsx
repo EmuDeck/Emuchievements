@@ -298,12 +298,10 @@ export const SettingsComponent: VFC = () =>
 		{
 			title: t("settingsGeneral"),
 			content: <GeneralSettings />,
-			route: '/general',
 		},
 		{
 			title: t("settingsRetroAchievements"),
 			content: <RetroAchievementsSettings />,
-			route: '/retroachievements'
 		},
 		{
 			title: t("settingsCustomIdsOverrides"),
