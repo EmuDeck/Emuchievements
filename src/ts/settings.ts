@@ -17,8 +17,18 @@ export type RetroAchievementsData = {
 };
 
 export type CustomIdsOverrides = {
+	/**
+	 * Game name
+	 */
 	name: string | null,
+	/**
+	 * RetroAchievements supported game files hash.
+	 * Can be found on URL: `https://retroachievements.org/game/xyz/hashes` where `xyz` is Game ID
+	 */
 	hash?: string | null,
+	/**
+	 * RetroAchievement Game ID.
+	 */
 	retro_achivement_game_id: number | null,
 }
 
