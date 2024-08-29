@@ -40,6 +40,10 @@ export type CacheData = {
 export type GeneralData = {
 	game_page: boolean,
 	store_category: boolean,
+	/**
+	 * Enabled or disable showing prefixes like `[ACHIEVED]` & `[NOT ACHIEVED]`
+	 */
+	show_achieved_state_prefixes: boolean,
 };
 
 export const CONFIG_VERSION = "1.1.0";
@@ -57,6 +61,7 @@ const DEFAULT_CONFIG: SettingsData = {
 	general: {
 		game_page: true,
 		store_category: true,
+		show_achieved_state_prefixes: true,
 	},
 };
 
