@@ -1,7 +1,48 @@
 import { SteamAppAchievement } from "./SteamTypes";
 import { GameExtendedAchievementEntityWithUserProgress as Achievement, GameInfoAndUserProgress as Game, GetGameInfoAndUserProgressResponse as GameRaw } from "@retroachievements/api";
 
-export function retroAchievementToSteamAchievement(achievement: Achievement, game: Game): SteamAppAchievement
+function getAchievementTitle(achievement: Achievement, showAchievedStatePrefixes: boolean = true) {
+	let achievementTitle = '';
+
+	if (!achievement.title) {
+		return '';
+	}
+
+	if (achievement.dateEarnedHardcore) {
+		achievementTitle += "[HARDCORE]";
+	}
+
+	if (showAchievedStatePrefixes) {
+		if (achievement.dateEarned) {
+			achievementTitle += "[ACHIEVED] ";
+		} else {
+			achievementTitle += "[NOT ACHIEVED] ";
+		}
+	}
+
+	if (achievement.title.includes("[m]")) {
+		achievementTitle += "[MISSABLE] ";
+	}
+
+	achievementTitle += achievement.title
+		.replace("[m]", "")
+		// NOTE: Removes spaces between `[HARDCORE][ACHIEVED] [MISSABLE]`
+		.replace(/\]\s\[/g, '][');
+
+	return achievementTitle;
+}
+
+function getAchievementImage(achievement: Achievement) {
+	const { badgeName } = achievement;
+
+	if (achievement.dateEarned) {
+		return `https://media.retroachievements.org/Badge/${badgeName ? badgeName : "0"}.png`
+	}
+
+	return `https://media.retroachievements.org/Badge/${badgeName ? badgeName : "0"}_lock.png`
+}
+
+export function retroAchievementToSteamAchievement(achievement: Achievement, game: Game, showPrefixes: boolean): SteamAppAchievement
 {
 	return {
 		bAchieved: !!(achievement.dateEarned),
@@ -23,8 +64,8 @@ export function retroAchievementToSteamAchievement(achievement: Achievement, gam
 				.replace("?", "")
 				.replace(".", "")
 			: "",
-		strImage: achievement.dateEarned ? `https://media.retroachievements.org/Badge/${!!(achievement.badgeName) ? achievement.badgeName : "0"}.png` : `https://media.retroachievements.org/Badge/${!!(achievement.badgeName) ? achievement.badgeName : "0"}_lock.png`,
-		strName: (achievement.title) ? ((achievement.dateEarnedHardcore ? "[HARDCORE] " : (achievement.dateEarned ? "[ACHIEVED] " : "[NOT ACHIEVED] ")) + (achievement.title.includes("[m]") ? "[MISSABLE] " : "") + achievement.title.replace("[m]", "")) : "",
+		strImage: getAchievementImage(achievement),
+		strName: getAchievementTitle(achievement, showPrefixes),
 	};
 }
 
