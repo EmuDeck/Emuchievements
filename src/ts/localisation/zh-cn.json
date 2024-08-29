@@ -3,6 +3,8 @@
 	"settingsGeneral": "A. 概况",
 	"settingsGamePage": "在游戏页面显示",
 	"settingsStoreCategory": "添加商店类别图标",
+	"settingsShowAchievementsPrefixes": "Show achievements prefixes",
+	"settingsShowAchievementsPrefixesDescription": "Show or hide prefixes [ACHIEVED] & [NOT ACHIEVED] from achievement name. For some games may need a full Steam Deck restart to actualize changes.",
 	"settingsRetroAchievements": "2. 成就",
 	"settingsCustomIdsOverrides": "Custom IDs Overrides",
 	"settingsCustomIdsOverridesSave": "Save",
