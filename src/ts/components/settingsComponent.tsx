@@ -75,12 +75,37 @@ const GeneralSettings: VFC = () =>
 	}}>
 		<PanelSection title={t("settingsGeneral")}>
 			<PanelSectionRow>
-				<ToggleField label={t("settingsGamePage")} checked={settings.general.game_page}
-					onChange={async (checked) => { settings.general.game_page = checked; await settings.writeSettings(); }} />
+				<ToggleField
+					label={t("settingsGamePage")}
+					checked={settings.general.game_page}
+					onChange={async (checked) => {
+						settings.general.game_page = checked;
+						await settings.writeSettings();
+					}}
+				/>
 			</PanelSectionRow>
+
 			<PanelSectionRow>
-				<ToggleField label={t("settingsStoreCategory")} checked={settings.general.store_category}
-					onChange={async (checked) => { settings.general.store_category = checked; await settings.writeSettings(); }} />
+				<ToggleField
+					label={t("settingsStoreCategory")}
+					checked={settings.general.store_category}
+					onChange={async (checked) => {
+						settings.general.store_category = checked;
+						await settings.writeSettings();
+					}}
+				/>
+			</PanelSectionRow>
+
+			<PanelSectionRow>
+				<ToggleField
+					label={t("settingsShowAchievementsPrefixes")}
+					checked={settings.general.show_achieved_state_prefixes ?? true}
+					onChange={async (checked) => {
+						settings.general.show_achieved_state_prefixes = checked;
+						await settings.writeSettings();
+					}}
+					description={t('settingsShowAchievementsPrefixesDescription')}
+				/>
 			</PanelSectionRow>
 		</PanelSection>
 	</div>);
@@ -343,4 +368,4 @@ export const SettingsComponent: VFC = () =>
 			content: <CustomIdsOverrides />,
 		}
 	]} />;
-}
+};

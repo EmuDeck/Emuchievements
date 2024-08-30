@@ -3,6 +3,8 @@
 	"settingsGeneral": "Général",
 	"settingsGamePage": "Afficher dans la page du jeu",
 	"settingsStoreCategory": "Ajouter une icône de catégorie de magasin",
+	"settingsShowAchievementsPrefixes": "Show achievements prefixes",
+	"settingsShowAchievementsPrefixesDescription": "Show or hide prefixes [ACHIEVED] & [NOT ACHIEVED] from achievement name. For some games may need a full Steam Deck restart to actualize changes.",
 	"settingsRetroAchievements": "RetroAchievements",
 	"settingsCustomIdsOverrides": "Custom IDs Overrides",
 	"settingsCustomIdsOverridesSave": "Save",

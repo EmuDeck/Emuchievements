@@ -473,7 +473,7 @@ export class AchievementManager implements Manager
 			.reduce((result, [_, achievement]) =>
 			{
 				this.logger.debug('Achievement: ', achievement);
-				const steam = retroAchievementToSteamAchievement(achievement, retro.game);
+				const steam = retroAchievementToSteamAchievement(achievement, retro.game, this.state.settings.general.show_achieved_state_prefixes);
 
 				if (result.user.data && result.global.data)
 				{
@@ -573,6 +573,7 @@ export class AchievementManager implements Manager
 		const user = this.userAchievements[app_id] ?? this.achievements[0];
 		const global = this.globalAchievements[app_id] ?? this.globalAchievements[0];
 		const retro = this.achievements[app_id];
+
 		if (loading)
 		{
 			return loadingFetchedAchievements;

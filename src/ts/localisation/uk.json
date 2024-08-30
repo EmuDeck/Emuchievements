@@ -3,6 +3,8 @@
 	"settingsGeneral": "Загальні налаштування",
 	"settingsGamePage": "Показати на сторінці гри",
 	"settingsStoreCategory": "Додати піктограму категорії магазину",
+	"settingsShowAchievementsPrefixes": "Show achievements prefixes",
+	"settingsShowAchievementsPrefixesDescription": "Show or hide prefixes [ACHIEVED] & [NOT ACHIEVED] from achievement name. For some games may need a full Steam Deck restart to actualize changes.",
 	"settingsRetroAchievements": "РетроДосягнення",
 	"settingsCustomIdsOverrides": "Custom IDs Overrides",
 	"settingsCustomIdsOverridesSave": "Save",
