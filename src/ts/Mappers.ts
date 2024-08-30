@@ -9,7 +9,7 @@ function getAchievementTitle(achievement: Achievement, showAchievedStatePrefixes
 	}
 
 	if (achievement.dateEarnedHardcore) {
-		achievementTitle += "[HARDCORE]";
+		achievementTitle += "[HARDCORE] ";
 	}
 
 	if (showAchievedStatePrefixes) {
