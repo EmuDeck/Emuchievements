@@ -16,7 +16,7 @@
 	"loginSuccess": "Sesión iniciada correctamente",
 	"loginFailed": "Error al iniciar sesión",
 	"settingsReset": "La configuración del esquema JSON ha cambiado, reiniciando JSON",
-	"title": "EmuAchievements",
+	"title": "Emuchievements",
 	"settings": "Ajustes",
 	"achievements": "Logros",
 	"refresh": "Recargar",
