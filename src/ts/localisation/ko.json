@@ -1,9 +1,9 @@
 {
 	"settingsTitle": "Emuchievements 설정",
 	"settingsGeneral": "일반",
-	"settingsGamePage": "Show in Game Page",
-	"settingsStoreCategory": "Add Store Category Icon",
-	"settingsShowAchievementsPrefixes": "Show achievements prefixes",
+	"settingsGamePage": "게임 페이지에 표시",
+	"settingsStoreCategory": "스토어 분류 아이콘 추가",
+	"settingsShowAchievementsPrefixes": "말머리에 업적 보이기",
 	"settingsShowAchievementsPrefixesDescription": "Show or hide prefixes [ACHIEVED] & [NOT ACHIEVED] from achievement name. For some games may need a full Steam Deck restart to actualize changes.",
 	"settingsRetroAchievements": "RetroAchievements",
 	"settingsCustomIdsOverrides": "Custom IDs Overrides",
