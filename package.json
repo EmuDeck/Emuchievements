@@ -10,7 +10,7 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/mrosenbergtech/Emuchievements/Emuchievements.git"
+		"url": "git+https://github.com/EmuDeck/Emuchievements.git"
 	},
 	"keywords": [
 		"decky",
@@ -20,12 +20,13 @@
 		"retroachievements",
 		"EmuDeck"
 	],
-	"author": "Witherking25 'Kernel Panic' <witherking@withertech.com> | mrosenbergtech",
+	"author": "Witherking25 'Kernel Panic' <witherking@withertech.com>",
+	"contributors": ["mrosenbergtech"],
 	"license": "GPL-3",
 	"bugs": {
-		"url": "https://github.com/mrosenbergtech/Emuchievements/issues"
+		"url": "https://github.com/EmuDeck/Emuchievements/issues"
 	},
-	"homepage": "https://github.com/mrosenbergtech/Emuchievements/#readme",
+	"homepage": "https://github.com/Emudeck/Emuchievements#readme",
 	"devDependencies": {
 		"@rollup/plugin-commonjs": "^21.1.0",
 		"@rollup/plugin-json": "^4.1.0",
