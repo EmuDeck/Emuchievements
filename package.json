@@ -1,6 +1,6 @@
 {
 	"name": "emuchievements",
-	"version": "2.0.4",
+	"version": "2.0.5",
 	"description": "Plugin for viewing RetroAchievements progress. Part of the EmuDeck Project",
 	"scripts": {
 		"build": "shx rm -rf dist && rollup -c",
@@ -10,7 +10,7 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/EmuDeck/Emuchievements.git"
+		"url": "git+https://github.com/mrosenbergtech/Emuchievements/Emuchievements.git"
 	},
 	"keywords": [
 		"decky",
@@ -20,12 +20,12 @@
 		"retroachievements",
 		"EmuDeck"
 	],
-	"author": "Witherking25 'Kernel Panic' <witherking@withertech.com>",
+	"author": "Witherking25 'Kernel Panic' <witherking@withertech.com> | mrosenbergtech",
 	"license": "GPL-3",
 	"bugs": {
-		"url": "https://github.com/EmuDeck/Emuchievements/issues"
+		"url": "https://github.com/mrosenbergtech/Emuchievements/issues"
 	},
-	"homepage": "https://github.com/EmuDeck/Emuchievements#readme",
+	"homepage": "https://github.com/mrosenbergtech/Emuchievements/#readme",
 	"devDependencies": {
 		"@rollup/plugin-commonjs": "^21.1.0",
 		"@rollup/plugin-json": "^4.1.0",
