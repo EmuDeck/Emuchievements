@@ -1,7 +1,7 @@
 {
   "name": "Emuchievements",
-  "author": "Witherking25  'Kernel Panic'",
-  "flags": ["debug"],
+  "author": "Witherking25  'Kernel Panic', mrosenbergtech",
+  "flags": [],
   "publish": {
     "tags": ["EmuDeck", "retroachievements"],
     "description": "Plugin for viewing RetroAchievements progress. Part of the EmuDeck Project",

@@ -1,6 +1,6 @@
 {
 	"name": "emuchievements",
-	"version": "2.0.4",
+	"version": "2.0.5",
 	"description": "Plugin for viewing RetroAchievements progress. Part of the EmuDeck Project",
 	"scripts": {
 		"build": "shx rm -rf dist && rollup -c",
@@ -21,6 +21,7 @@
 		"EmuDeck"
 	],
 	"author": "Witherking25 'Kernel Panic' <witherking@withertech.com>",
+	"contributors": ["mrosenbergtech"],
 	"license": "GPL-3",
 	"bugs": {
 		"url": "https://github.com/EmuDeck/Emuchievements/issues"
