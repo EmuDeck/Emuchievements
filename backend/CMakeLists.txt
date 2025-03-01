@@ -8,6 +8,7 @@ set(${PROJECT_NAME}_SOURCE
 )
 
 set(RCHEEVOS_SOURCE
+        src/rcheevos/src/rc_compat.c
         src/rcheevos/src/rhash/cdreader.c
         src/rcheevos/src/rhash/aes.c
         src/rcheevos/src/rhash/hash.c

@@ -45,17 +45,26 @@ std::string hash_file(const std::filesystem::path &path)
 std::string hash(const std::filesystem::path &path)
 {
 	std::string hash;
-	auto extracted = util::extract(path.string());
-	if (std::filesystem::is_regular_file(extracted))
-	{
-		hash = hash_file(extracted);
-		std::filesystem::remove_all(extracted.parent_path());
-	} else
+	// Handle ISOs Differently - We Don't Need to Extract Them
+	if (has_extension(path, "iso"))
 	{
 		hash = hash_file(path);
-		std::filesystem::remove_all(extracted);
+		return hash;
 	}
-	return hash;
+	else
+	{
+		auto extracted = util::extract(path.string());
+		if (std::filesystem::is_regular_file(extracted))
+		{
+			hash = hash_file(extracted);
+			std::filesystem::remove_all(extracted.parent_path());
+		} else
+		{
+			hash = hash_file(path);
+			std::filesystem::remove_all(extracted);
+		}
+		return hash;	
+	}
 }
 
 int main(int argc, char **argv)
