@@ -45,14 +45,8 @@ std::string hash_file(const std::filesystem::path &path)
 std::string hash(const std::filesystem::path &path)
 {
 	std::string hash;
-	// Handle ISOs First - We Don't Want to Extract Them
-	if (has_extension(path, "iso"))
-	{
-		hash = hash_file(path);
-		return hash;
-	}
-	// Next - Known Compressed Archive Types
-	else if (has_extension(path, "zip") || has_extension(path, "7z"))
+	// Archive Type - Extract
+	if (has_extension(path, "zip") || has_extension(path, "7z"))
 	{
 		auto extracted = util::extract(path.string());
 		if (std::filesystem::is_regular_file(extracted))
@@ -66,7 +60,7 @@ std::string hash(const std::filesystem::path &path)
 		}
 		return hash;	
 	}
-	// Other - Just Hash The File
+	// Other - Just Hash The File (Includes .iso, etc.)
 	else
 	{
 		hash = hash_file(path);
