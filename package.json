@@ -1,6 +1,6 @@
 {
 	"name": "emuchievements",
-	"version": "2.0.5",
+	"version": "2.0.6-zip7ztest",
 	"description": "Plugin for viewing RetroAchievements progress. Part of the EmuDeck Project",
 	"scripts": {
 		"build": "shx rm -rf dist && rollup -c",
