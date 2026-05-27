@@ -8,16 +8,13 @@ Decky Loader Steam Deck Plugin for viewing RetroAchievements progress.
 ## Building
 
 ```bash
-
-pnpm i # Installs dependencies
-
-pnpm package # Builds installable zip file
-
-pnpm start # deploys to your deck if you have your vscode config set up for deployment (developer thing)
-
+pnpm i       # Installs dependencies
+pnpm build   # Builds the plugin (production)
+pnpm dev     # Builds the plugin (development mode)
+pnpm watch   # Builds and watches for changes
 ```
 
-vscode and intellj IDEA run configs are included
+vscode and intellij IDEA run configs are included
 
 ## Translation
 
