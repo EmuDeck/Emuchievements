@@ -40,8 +40,8 @@ importers:
         specifier: 1.1.3
         version: 1.1.3
       '@decky/ui':
-        specifier: 4.11.1
-        version: 4.11.1
+        specifier: 4.11.6
+        version: 4.11.6
       '@rollup/plugin-commonjs':
         specifier: ^21.1.0
         version: 21.1.0(rollup@2.80.0)
@@ -105,8 +105,8 @@ packages:
   '@decky/api@1.1.3':
     resolution: {integrity: sha512-XsPCZxfxk5I1UtylIUN3qaWQI31siQbKfbLIskkI5innEatY1m4NQqBv/6hwPaO9mKMbdqYpnh5PSJDeMEOOBA==}
 
-  '@decky/ui@4.11.1':
-    resolution: {integrity: sha512-+x+rJB0MBQSQGp0UpsRJ4BOv7zlHzcBPT76enopjGf56H41beR8VZua9F4upLtDgPku4Zh8z3uB53nFlvTilXQ==}
+  '@decky/ui@4.11.6':
+    resolution: {integrity: sha512-vPCr2/KODeM6DAzIL/XN2e/RY7vhebXoWoh8e0VvB5QJU59Usb1z/cIpNmqe/GEMd1P3om6DFMcpEW5v8Se95Q==}
 
   '@jridgewell/gen-mapping@0.3.13':
     resolution: {integrity: sha512-2kkt/7niJ6MgEPxF0bYdQ6etZaA+fQvDcLKckhy1yIQOzaoKjBBjSj63/aLVjYE3qhRt5dvM+uUyfCg6UKCBbA==}
@@ -1264,7 +1264,7 @@ snapshots:
 
   '@decky/api@1.1.3': {}
 
-  '@decky/ui@4.11.1': {}
+  '@decky/ui@4.11.6': {}
 
   '@jridgewell/gen-mapping@0.3.13':
     dependencies:
