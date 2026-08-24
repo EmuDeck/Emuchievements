@@ -10,7 +10,7 @@
 	"settingsCustomIdsOverridesSave": "Salvataggio",
 	"settingsCustomIdsOverridesAddRow": "Aggiungi riga",
 	"settingsInstructions": "Istruzioni",
-	"settingsInstructionsMD": "Per ottenere la tua chiave api, vai su [https://retroachievements.org/controlpanel.php](https://retroachievements. rg/controlpanel.php) e accedi al tuo account. Dovresti vedere la tua chiave Api in una delle voci di quella pagina. o digitare fuori nella casella chiave api qui sotto o andare in modalità desktop e avviare steam in modalità immagine grande in modo che si abbia accesso agli appunti per incollare,",
+	"settingsInstructionsMD": "Per ottenere la tua chiave api, vai su [https://retroachievements.org/controlpanel.php](https://retroachievements.org/controlpanel.php) e accedi al tuo account. dovresti vedere la tua chiave api in una delle voci di quella pagina. digitala nella casella chiave api qui sotto o vai in modalità desktop e avvia steam in modalità big picture in modo da avere accesso agli appunti per incollare,",
 	"settingsUsername": "Nome utente: ",
 	"settingsAPIKey": "Chiave API: ",
 	"loginSuccess": "Accesso riuscito",
