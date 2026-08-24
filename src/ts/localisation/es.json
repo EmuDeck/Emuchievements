@@ -25,6 +25,6 @@
 	"fetching": "Obteniendo",
 	"error": "Error",
 	"noAchievements": "No se encontraron logros",
-	"foundAchievements": "%% cargado, procesado: %%",
+	"foundAchievements": "Cargado %%, Hash: %%",
 	"noLogin": "¡No has iniciado sesión! Por favor, inicia sesión para ver los logros."
 }
