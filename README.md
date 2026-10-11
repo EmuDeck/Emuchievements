@@ -5,6 +5,24 @@
 
 Decky Loader Steam Deck Plugin for viewing RetroAchievements progress.
 
+## Installation
+
+### Via URL (recommended for this fork)
+
+Decky Loader supports installing a plugin directly from a URL pointing to its release zip. Use:
+
+```
+https://github.com/btd1337/Emuchievements/releases/latest/download/Emuchievements.zip
+```
+
+This always resolves to the zip attached to the most recent GitHub Release published by the [Build and Release workflow](.github/workflows/release.yml), so you don't need to update the URL when a new version comes out.
+
+### Manual zip install
+
+1. Download `Emuchievements.zip` from the [Releases page](https://github.com/btd1337/Emuchievements/releases).
+2. On the Deck, enable **Developer Mode** in Decky Loader's settings.
+3. Use **Install Plugin from Zip** and select the downloaded file.
+
 ## Building
 
 ```bash
