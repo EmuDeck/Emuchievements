@@ -62,7 +62,19 @@ declare global
 	let collectionStore: CollectionStore;
 }
 
-const AppDetailsSections = findModuleChild((m) =>
+function safeFindModuleChild<T>(filter: (m: any) => T | undefined): T | undefined
+{
+	try
+	{
+		return findModuleChild(filter);
+	} catch (e)
+	{
+		console.error("[Emuchievements] findModuleChild scan failed, Steam's webpack internals may have changed", e);
+		return undefined;
+	}
+}
+
+const AppDetailsSections = safeFindModuleChild((m) =>
 {
 	if (typeof m !== 'object') return;
 	for (const prop in m)
@@ -78,7 +90,7 @@ const AppDetailsSections = findModuleChild((m) =>
 	return;
 });
 
-const Achievements = (findModuleChild(module =>
+const Achievements = safeFindModuleChild(module =>
 {
 	if (typeof module !== 'object') return undefined;
 	for (let prop in module)
@@ -88,7 +100,7 @@ const Achievements = (findModuleChild(module =>
 			if (module[prop]?.m_mapMyAchievements) return module[prop];
 		} catch (_) {}
 	}
-}));
+});
 
 interface Hook
 {
@@ -119,31 +131,37 @@ export default definePlugin(function ()
 		</EmuchievementsStateContextProvider>
 	);
 
-	mountManager.addPatchMount({
-		patch(): Patch
-		{
-			return replacePatch(
-				Achievements.__proto__,
-				"LoadMyAchievements",
-				args =>
-				{
-					//console.log(args, appStore.GetAppOverviewByAppID(args[0]), appDetailsStore.GetAppDetails(args[0]));
-					if (appStore.GetAppOverviewByAppID(args[0])?.app_type === 1073741824 && !Achievements.m_mapGlobalAchievements.has(args[0]))
+	if (Achievements)
+	{
+		mountManager.addPatchMount({
+			patch(): Patch
+			{
+				return replacePatch(
+					Achievements.__proto__,
+					"LoadMyAchievements",
+					args =>
 					{
-						let data = state.managers.achievementManager.fetchAchievements(args[0]);
-						logger.debug(data.global);
-						if (!data.global.loading)
-							Achievements.m_mapGlobalAchievements.set(args[0], data.global);
-						logger.debug(data.user);
-						if (!data.user.loading)
-							Achievements.m_mapMyAchievements.set(args[0], data.user);
-						return;
+						//console.log(args, appStore.GetAppOverviewByAppID(args[0]), appDetailsStore.GetAppDetails(args[0]));
+						if (appStore.GetAppOverviewByAppID(args[0])?.app_type === 1073741824 && !Achievements.m_mapGlobalAchievements.has(args[0]))
+						{
+							let data = state.managers.achievementManager.fetchAchievements(args[0]);
+							logger.debug(data.global);
+							if (!data.global.loading)
+								Achievements.m_mapGlobalAchievements.set(args[0], data.global);
+							logger.debug(data.user);
+							if (!data.user.loading)
+								Achievements.m_mapMyAchievements.set(args[0], data.user);
+							return;
+						}
+						return callOriginal;
 					}
-					return callOriginal;
-				}
-			);
-		}
-	});
+				);
+			}
+		});
+	} else
+	{
+		logger.error("Could not locate Steam's Achievements module, achievement sync to the native UI is disabled");
+	}
 
 	mountManager.addPatchMount({
 		patch(): Patch
@@ -238,21 +256,27 @@ export default definePlugin(function ()
 		}
 	});
 
-	mountManager.addPatchMount({
-		patch(): Patch
-		{
-			return afterPatch(AppDetailsSections?.prototype, 'GetSections', function(this: any, _: Record<string, unknown>[], ret: Set<string>)
+	if (AppDetailsSections)
+	{
+		mountManager.addPatchMount({
+			patch(): Patch
 			{
-				const overview: SteamAppOverview = this?.props?.overview;
-				if (overview?.app_type === 1073741824)
+				return afterPatch(AppDetailsSections.prototype, 'GetSections', function(this: any, _: Record<string, unknown>[], ret: Set<string>)
 				{
-					if (state.settings.general.game_page) ret.add("achievements");
-					else ret.delete("achievements");
-				}
-				return ret;
-			});
-		}
-	});
+					const overview: SteamAppOverview = this?.props?.overview;
+					if (overview?.app_type === 1073741824)
+					{
+						if (state.settings.general.game_page) ret.add("achievements");
+						else ret.delete("achievements");
+					}
+					return ret;
+				});
+			}
+		});
+	} else
+	{
+		logger.error("Could not locate Steam's AppDetailsSections module, the achievements tab on the game page is disabled");
+	}
 
 	mountManager.addMount({
 		mount: function (): void
