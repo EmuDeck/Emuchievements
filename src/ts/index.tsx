@@ -3,7 +3,7 @@ import
 	afterPatch,
 	beforePatch,
 	callOriginal,
-	findModuleChild,
+	findModuleExport,
 	Patch,
 	replacePatch,
 	Router,
@@ -62,32 +62,15 @@ declare global
 	let collectionStore: CollectionStore;
 }
 
-const AppDetailsSections = findModuleChild((m) =>
+const AppDetailsSections = findModuleExport((m) =>
 {
-	if (typeof m !== 'object') return;
-	for (const prop in m)
-	{
-		try
-		{
-			if (
-				typeof m[prop] === 'function' &&
-				typeof m[prop].prototype?.GetSections === 'function'
-			) return m[prop];
-		} catch (_) {}
-	}
-	return;
+	return typeof m?.prototype?.GetSections === 'function';
 });
 
-const Achievements = (findModuleChild(module =>
+const Achievements = (findModuleExport(module =>
 {
 	if (typeof module !== 'object') return undefined;
-	for (let prop in module)
-	{
-		try
-		{
-			if (module[prop]?.m_mapMyAchievements) return module[prop];
-		} catch (_) {}
-	}
+	return module?.m_mapMyAchievements;
 }));
 
 interface Hook
